@@ -35,7 +35,7 @@ from mngmnt_fns_and_class import ManagementSet, check_mask_location, get_hilda_l
 
 # ===============================================================
 #
-def simplify_soil_recs(soil_recs, use_dom_soil_flag):
+def simplify_soil_recs(soil_recs, use_dom_soil_flag=True):
     """
     compress soil records if duplicates are present
     simplify soil records if requested
@@ -299,9 +299,9 @@ def _generate_ecosse_files(form, climgen, mask_defn, yield_df, num_band, yield_d
     return
 
 def generate_banded_sims(form):
-    '''
+    """
     called from GUI
-    '''
+    """
     if form.hwsd_mu_globals == None:
         print('Undetermined HWSD aoi - please select a valid HSWD csv file')
         return

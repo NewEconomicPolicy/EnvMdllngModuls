@@ -378,8 +378,8 @@ class HWSD_bil(object,):
         form = str(int(chunksize/2)) + 'H'  # format for unpack
 
         # TODO - construct a 2D array from extraction
-        inpfname = 'hwsd.bil'
-        inp_file = join(self.hwsd_dir, inpfname)
+        inpfname = 'HWSD2.bil'
+        inp_file = join(self.hwsd_dir, 'raster', inpfname)
         finp = open(inp_file, 'rb')
 
         nrows_read = 0
