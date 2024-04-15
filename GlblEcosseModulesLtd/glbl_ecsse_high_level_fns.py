@@ -180,7 +180,7 @@ def _generate_ecosse_files(form, climgen, mask_defn, yield_df, num_band, yield_d
     form.lgr.info(mess); print(mess)
 
     # generate weather dataset indices which enclose the AOI for this band
-    aoi_indices_fut, aoi_indices_hist = climgen.genLocalGrid(bbox, hwsd, snglPntFlag, num_band)
+    aoi_indices_fut, aoi_indices_hist = climgen.genLocalGrid(bbox, hwsd, snglPntFlag)
 
     print('Getting future data for band {}'.format(num_band) )
     #      =============================
