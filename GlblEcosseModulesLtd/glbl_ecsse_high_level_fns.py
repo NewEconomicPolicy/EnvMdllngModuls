@@ -7,7 +7,7 @@
 # Licence:     <your licence>
 # Description:
 #   comprises two functions:
-#       def _generate_ecosse_files(form, climgen, num_band)
+#       def _write_to_soil_files(form, climgen, num_band)
 #       def generate_banded_sims(form)
 #-------------------------------------------------------------------------------
 #
@@ -127,7 +127,7 @@ def _generate_ecosse_files(form, climgen, mask_defn, yield_df, num_band, yield_d
     """
     Main loop for generating ECOSSE outputs
     """
-    func_name =  __prog__ + '\t_generate_ecosse_files'
+    func_name =  __prog__ + '\t_write_to_soil_files'
 
     study = form.study
     print('Gathering soil and climate data for study {}...\t\tin {}'.format(study,func_name))
@@ -296,7 +296,7 @@ def _generate_ecosse_files(form, climgen, mask_defn, yield_df, num_band, yield_d
               .format(num_band, landuse_yes, landuse_no, skipped, completed))
 
     print('')   # spacer
-    return
+    return completed
 
 def generate_banded_sims(form):
     """
@@ -326,6 +326,8 @@ def generate_banded_sims(form):
     lat_ur_aoi = form.hwsd_mu_globals.lat_ur_aoi
     lon_ur_aoi = form.hwsd_mu_globals.lon_ur_aoi
     bbox_aoi = list([lon_ll_aoi,lat_ll_aoi,lon_ur_aoi,lat_ur_aoi])
+
+    max_cells = int(form.w_max_cells.text())
 
     # check overlap - study too far to west or east or too far south or north of AOI file
     # ===================================================================================
@@ -412,6 +414,7 @@ def generate_banded_sims(form):
 
     # main banding loop
     # =================
+    ncompleted = 0
     lat_step = 0.5
     nsteps = int((lat_ur-lat_ll)/lat_step) + 1
     for isec in range(nsteps):
@@ -433,9 +436,16 @@ def generate_banded_sims(form):
             print('\nProcessing band {} of {} with latitude extent of min: {}\tmax: {}'
                   .format(num_band, nsteps, round(lat_ll_new,6), round(lat_ur, 6)))
 
-            _generate_ecosse_files(form, climgen, mask_defn, yield_df, num_band, yield_defn, pi_var, pi_csv_tple)  # does actual work
+            completed = _generate_ecosse_files(form, climgen, mask_defn, yield_df, num_band, yield_defn,
+                                                                            pi_var, pi_csv_tple)  # does actual work
+            ncompleted += completed
+
+            if ncompleted >= max_cells:
+                print('Finished processing after generating {} cells'.format(ncompleted))
+                break
 
         # check to see if the last band is completed
+        # ==========================================
         if lat_ll_aoi > lat_ll_new or num_band == nsteps:
             print('Finished processing after {} bands of latitude extents'.format(num_band))
             for ichan in range(len(form.fstudy)):
