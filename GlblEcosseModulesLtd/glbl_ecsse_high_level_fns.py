@@ -327,9 +327,12 @@ def generate_banded_sims(form):
     lon_ur_aoi = form.hwsd_mu_globals.lon_ur_aoi
     bbox_aoi = list([lon_ll_aoi,lat_ll_aoi,lon_ur_aoi,lat_ur_aoi])
 
-    max_cells = int(form.w_max_cells.text())
+    if hasattr(form, 'w_max_cells'):
+        max_cells = int(form.w_max_cells.text())
+    else:
+        max_cells = 99999999
 
-    # check overlap - study too far to west or east or too far south or north of AOI file
+        # check overlap - study too far to west or east or too far south or north of AOI file
     # ===================================================================================
     if (lon_ur < lon_ll_aoi) or (lon_ll > lon_ur_aoi) or  (lat_ur < lat_ll_aoi) or (lat_ll > lat_ur_aoi):
         print('Error: Study bounding box and HWSD CSV file do not overlap - no simulations are possible')
