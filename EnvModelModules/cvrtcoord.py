@@ -14,11 +14,11 @@ __author__ = 's03mm5'
 from numpy import pi, sin, cos, tan, sqrt, arctan2
 
 def OSGB36toWGS84(E, N):
-    """Convert an OSGB easting/northing coordinate to a WGS84 lon/lat coordinate.
+    """
+    Convert an OSGB easting/northing coordinate to a WGS84 lon/lat coordinate.
 
     Function written by Hannah Fry:
-    http://hannahfry.co.uk/2012/02/01/converting-british-national-grid-to-
-    latitude-and-longitude-ii/
+    http://hannahfry.co.uk/2012/02/01/converting-british-national-grid-to-latitude-and-longitude-ii/
 
     'E' and 'N' are the British national grid coordinates - eastings and
         northings
