@@ -248,6 +248,13 @@ def check_mask_location(mask_defn, site_rec, land_uses, resol_deg):
     """
     gran_lat, gran_lon, lat, lon, dummy, dummy = site_rec
 
+    # confirm lat, lon are within bounds of Hilda dataset
+    # ===================================================
+    if (lat > mask_defn.lat_last) or (lat < mask_defn.lat_frst) or \
+            (lon > mask_defn.lon_last) or (lon < mask_defn.lon_frst):
+        print(WARN_STR + 'lat: {} lon: {} out of bounds of Hilda dataset'.format(lat,lon))
+        return False
+
     res_d2 = resol_deg/2
 
     lat_ur = lat + res_d2
