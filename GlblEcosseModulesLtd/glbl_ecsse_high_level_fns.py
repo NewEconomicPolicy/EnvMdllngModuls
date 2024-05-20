@@ -110,7 +110,8 @@ def _simplify_aoi(aoi_res):
         content = site_rec[-1]
         npairs = len(content)
         if npairs == 0:
-            print('No soil information for AOI cell {} - will skip'.format(site_rec))
+            print('No soil information for AOI cell at lat/long: {} {} - will skip'
+                                                                .format(round(site_rec[2],4), round(site_rec[3], 4)))
         elif npairs == 1:
             aoi_res_new.append(site_rec)
         else:
@@ -317,7 +318,7 @@ def generate_banded_sims(form):
     lat_ll = float(form.w_ll_lat.text())
     lon_ur = float(form.w_ur_lon.text())
     lat_ur = float(form.w_ur_lat.text())
-    form.bbox =  list([lon_ll, lat_ll, lon_ur, lat_ur])
+    form.bbox = list([lon_ll, lat_ll, lon_ur, lat_ur])
 
     # lat_ll_aoi is the floor i.e. least latitude, of the HWSD aoi which marks the end of the banding loop
     # ====================================================================================================
