@@ -30,13 +30,17 @@ GRANULARITY = 120
 WARNING_STR = '*** Warning *** '
 
 def check_cntry_prvnc_mappings(form):
-    '''
+    """
     called from GUI
     NB  vars ending in _dset indicate netCDF4 dataset objects
         vars ending in _defn are objects which comprising NC file attributes e.g. resolution, extents, file location
-    '''
-    glbl_n_inpts = MakeBboxesNitroInpts(form.settings, form.cntries_defn)
+    """
+    n_inputs_xls = form.settings['n_inputs_xls']
+    if not os.path.isfile(n_inputs_xls):
+        print('File ' + n_inputs_xls + ' must exist')
+        return None
 
+    glbl_n_inpts = MakeBboxesNitroInpts(form.settings, form.cntries_defn)
 
 def make_fert_recs_test(lggr, fert_defns, lat, lon, record_ndays):
     '''

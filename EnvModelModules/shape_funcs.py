@@ -83,9 +83,9 @@ class MakeBboxesNitroInpts(object, ):
         pass
 
 def _read_world_n_inputs(settings):
-    '''
+    """
 
-    '''
+    """
     wb_obj = load_workbook(settings['n_inputs_xls'], data_only=True)
     global_n_inputs = {}
 
