@@ -13,11 +13,14 @@ __version__ = '0.0.0'
 # Version history
 # ---------------
 # 
-import os
-import netCDF4 as cdf
+from os.path import lexists, normpath, join
+from netCDF4 import Dataset, num2date
 from glob import glob
-from time import sleep, strftime
+
 from thornthwaite import thornthwaite
+
+WARNING = '*** Warning *** '
+ERROR_STR = '*** Error *** '
 
 ngranularity = 120
 month_names_short = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -25,18 +28,18 @@ month_names_short = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 sleepTime = 5
 
 def record_weather_settings(scenario, hist_strt_year, hist_end_year, fut_strt_year, fut_end_year):
-    '''
+    """
     record weather settings
-    '''
+    """
     previous_settings = {'scenario': scenario, 'hist_strt_year': hist_strt_year, 'hist_end_year': hist_end_year,
                                                     'fut_strt_year': fut_strt_year, 'fut_end_year': fut_end_year}
     return previous_settings
 
 def change_weather_resource(form, weather_resource = None):
-    '''
+    """
     during initialisation, weather_resource will be specified
     otherwise get it from GUI
-    '''
+    """
     if weather_resource == '':
         return
     if weather_resource is None:
@@ -104,9 +107,9 @@ def change_weather_resource(form, weather_resource = None):
     return
 
 def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
-    '''
+    """
     create object describing weather dataset characteristics
-    '''
+    """
 
     # standard names
     # ==============
@@ -118,8 +121,8 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
         lat = 'lat'
         lon = 'lon'
 
-    nc_fname = os.path.normpath(nc_fname)
-    nc_dset = cdf.Dataset(nc_fname, 'r')
+    nc_fname = normpath(nc_fname)
+    nc_dset = Dataset(nc_fname, 'r')
     time_var = nc_dset.variables[time_var_name]
     if 'calendar' in time_var.ncattrs():
         calendar_attr = time_var.calendar
@@ -145,10 +148,10 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
 
     # resolutions
     # ===========
-    resol_lon = (lon_var[-1] - lon_var[0])/(len(lon_var) - 1)
-    resol_lat = (lat_var[-1] - lat_var[0])/(len(lat_var) - 1)
-    if abs(resol_lat) != abs(resol_lon):
-        print('Warning - weather resource {} has different lat/lon resolutions: {} {}'
+    resol_lon = round(abs((lon_var[-1] - lon_var[0])/(len(lon_var) - 1)), 5)
+    resol_lat = round(abs((lat_var[-1] - lat_var[0])/(len(lat_var) - 1)), 5)
+    if resol_lat != resol_lon:
+        print(WARNING + '- weather resource {} has different lat/lon resolutions: {} {}'
                                                         .format(weather_resource, resol_lat, resol_lon))
 
     # Get the start and end date of the time series (as datetime objects):
@@ -159,15 +162,8 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
         end_year = start_year + int(len(time_var)/12) - 1
     else:
         time_var_units = time_var.units
-        start_day = time_var[0]
-        try:
-            start_date = cdf.num2date(start_day, units = time_var_units, calendar = calendar_attr)
-        except (TypeError) as e:
-            print('Error deriving start and end year for dataset: ' + nc_fname)
-            return None
-
-        end_day = int(time_var[-1])
-        end_date = cdf.num2date(end_day, units = time_var_units, calendar = calendar_attr)
+        start_date = num2date(int(time_var[0]), units = time_var_units, calendar = calendar_attr)
+        end_date = num2date(int(time_var[-1]), units = time_var_units, calendar = calendar_attr)
         start_year = start_date.year
         end_year = end_date.year
 
@@ -191,10 +187,10 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
     return wthr_rsrc
 
 def read_weather_dsets_detail(form):
-    '''
+    """
     ascertain the year span for historic datasets
     TODO: replace with approach adopted for Site Specific version of Global Ecosse
-    '''
+    """
 
     # weather set linkages
     # ====================
@@ -220,7 +216,7 @@ def read_weather_dsets_detail(form):
     # ===============================
     generic_resource = 'EObs'
     eobs_mnthly_dir  = weather_dir + '\\EObs_v23\\Monthly'
-    if os.path.lexists(eobs_mnthly_dir):
+    if lexists(eobs_mnthly_dir):
         wthr_rsrce = 'EObs_Mnth'
         eobs_fnames = glob(eobs_mnthly_dir + '/[rr-tg]*Monthly.nc')
         if len(eobs_fnames) > 0:
@@ -237,7 +233,7 @@ def read_weather_dsets_detail(form):
     # =======================================
     generic_resource = 'HARMONIE'
     harmonie_dir = weather_dir + '\\HARMONIE_V2\\Monthly'
-    if os.path.lexists(harmonie_dir):
+    if lexists(harmonie_dir):
         wthr_rsrce = 'HARMONIE_V2'
         harmonie_fnames = glob(harmonie_dir + '/cruhar*.nc')
         if len(harmonie_fnames) > 0:
@@ -254,7 +250,7 @@ def read_weather_dsets_detail(form):
     # ==================
     generic_resource = 'NCAR_CCSM4'
     ncar_mnthly_dir  = weather_dir + '\\NCAR_CCSM4\\Monthly'
-    if os.path.lexists(ncar_mnthly_dir):
+    if lexists(ncar_mnthly_dir):
         wthr_rsrce = 'NCAR_CCSM4'
         ncar_fnames = glob(ncar_mnthly_dir + '\\rcp26\\*_Amon*.nc')
         if len(ncar_fnames) > 0:
@@ -273,7 +269,7 @@ def read_weather_dsets_detail(form):
     cru_flag = False
     valid_wthr_dset_rsrces = []
     cru_dir  = weather_dir + '\\CRU_Data'
-    if os.path.lexists(cru_dir):
+    if lexists(cru_dir):
         wthr_rsrce = 'CRU_hist'
         cru_fnames = glob(cru_dir + '/cru*dat.nc')
         if len(cru_fnames) > 0:
@@ -292,9 +288,9 @@ def read_weather_dsets_detail(form):
     # =============
     climgen_flag = False
     for dset_scenario in list(['A1B','A2','B1','B2']):
-        climgen_dir = os.path.join(weather_dir, 'ClimGen', dset_scenario)
+        climgen_dir = join(weather_dir, 'ClimGen', dset_scenario)
         wthr_rsrce = 'ClimGen_' + dset_scenario
-        if os.path.lexists(climgen_dir):
+        if lexists(climgen_dir):
             climgen_fnames = glob(climgen_dir + '\\*.nc')
             if len(climgen_fnames) > 0:
                 wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(climgen_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
@@ -322,9 +318,9 @@ def read_weather_dsets_detail(form):
     return
 
 def report_aoi_size(form, lon_ll, lat_ll, lon_ur, lat_ur):
-    '''
+    """
     write ASCII climate files
-    '''
+    """
     func_name =  __prog__ + ' report_aoi_size'
 
     # this will be initially only NASA
@@ -360,9 +356,9 @@ def report_aoi_size(form, lon_ll, lat_ll, lon_ur, lat_ur):
 
 def write_csv_wthr_file(lgr, country, gcm_name, scenario, latitude, longitude,
                                                         start_year, end_year, pettmp_pr, pettmp_tas, out_dir):
-    '''
+    """
     write to file, simulation weather for the given time period
-    '''
+    """
     func_name =  __prog__ + ' _write_csv_wthr_file'
 
     metric_list = list(['Precipitation', 'Temperature','Potentional Evapotranspiration'])
@@ -370,7 +366,7 @@ def write_csv_wthr_file(lgr, country, gcm_name, scenario, latitude, longitude,
     # file comprising rain and temperature
     # ====================================
     short_fname =  country + '_' + gcm_name + '_' + scenario + '.txt'
-    metrics_fname = os.path.join(out_dir, short_fname)
+    metrics_fname = join(out_dir, short_fname)
     try:
         fhand_out = open(metrics_fname, 'w')
     except PermissionError as e:
@@ -450,15 +446,15 @@ def write_csv_wthr_file(lgr, country, gcm_name, scenario, latitude, longitude,
 
 def write_csv_wthr_file_v1(lgr, country, gcm_name, scenario, latitude, longitude,
                         start_year, end_year, pettmp_pr, pettmp_tas, out_dir):
-    '''
+    """
     write to file, simulation weather for the given time period
-    '''
+    """
     func_name =  __prog__ + ' _write_csv_wthr_file'
 
     # file comprising rain and temperature
     # ====================================
     short_fname =  country + '_' + gcm_name + '_' + scenario + '.txt'
-    metrics_fname = os.path.join(out_dir, short_fname)
+    metrics_fname = join(out_dir, short_fname)
     try:
         fhand_out = open(metrics_fname, 'w')
     except PermissionError as e:
