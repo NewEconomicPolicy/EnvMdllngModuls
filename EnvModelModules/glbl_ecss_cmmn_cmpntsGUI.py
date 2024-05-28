@@ -15,7 +15,7 @@ __version__ = '0.0.0'
 # ---------------
 #
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLabel, QComboBox, QLineEdit
+from PyQt5.QtWidgets import QLabel, QComboBox, QLineEdit, QPushButton
 
 from shape_funcs import calculate_area, format_bbox
 
@@ -35,24 +35,19 @@ REVERSE_RESOLS = {}
 for key in RESOLUTIONS:
     REVERSE_RESOLS[RESOLUTIONS[key]] = key
 
-def glblecss_limit_simulations(form, grid, irow):
+def glblecss_limit_sims(form, grid, irow):
     """
 
     """
     irow += 1
     icol = 0
-    lbl01 = QLabel('Limit simulations')
+    lbl01 = QLabel('Limit simulations - start band, end band, max sims:')
     lbl01.setAlignment(Qt.AlignRight)
     helpText = 'limit number of latitude bands and/or number of simulation grids cells'
     lbl01.setToolTip(helpText)
-    grid.addWidget(lbl01, irow, icol)
+    grid.addWidget(lbl01, irow, icol, 1, 2)
 
-    icol += 1
-    lbl02a = QLabel('Start and end bands:')
-    lbl02a.setAlignment(Qt.AlignRight)
-    grid.addWidget(lbl02a, irow, icol)
-
-    icol += 1
+    icol += 2
     w_strt_band = QLineEdit()
     w_strt_band.setFixedWidth(WDGT_SIZE_60)
     grid.addWidget(w_strt_band, irow, icol)
@@ -65,15 +60,17 @@ def glblecss_limit_simulations(form, grid, irow):
     form.w_end_band = w_end_band
 
     icol += 1
-    lbl02c = QLabel('max # sims:')
-    lbl02c.setAlignment(Qt.AlignRight)
-    grid.addWidget(lbl02c, irow, icol)
-
-    icol += 1
     w_max_sims = QLineEdit()
     w_max_sims.setFixedWidth(WDGT_SIZE_60)
     grid.addWidget(w_max_sims, irow, icol)
     form.w_max_sims = w_max_sims
+
+    icol += 1
+    w_view_run = QPushButton('View run')
+    helpText = 'View details from last run'
+    w_view_run.setToolTip(helpText)
+    grid.addWidget(w_view_run, irow, icol)
+    w_view_run.clicked.connect(form.viewRunReport)
 
     return irow
 

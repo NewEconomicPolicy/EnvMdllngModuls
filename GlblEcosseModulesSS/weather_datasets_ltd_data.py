@@ -13,14 +13,11 @@ __version__ = '0.0.0'
 # Version history
 # ---------------
 # 
-from os.path import lexists, normpath, join
+from os.path import join, lexists, normpath
 from netCDF4 import Dataset, num2date
 from glob import glob
-
+from time import sleep, strftime
 from thornthwaite import thornthwaite
-
-WARNING = '*** Warning *** '
-ERROR_STR = '*** Error *** '
 
 ngranularity = 120
 month_names_short = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -35,27 +32,27 @@ def record_weather_settings(scenario, hist_strt_year, hist_end_year, fut_strt_ye
                                                     'fut_strt_year': fut_strt_year, 'fut_end_year': fut_end_year}
     return previous_settings
 
-def change_weather_resource(form, weather_resource = None):
+def change_weather_resource(form, wthr_rsrce = None):
     """
-    during initialisation, weather_resource will be specified
+    during initialisation, wthr_rsrce will be specified
     otherwise get it from GUI
     """
-    if weather_resource == '':
+    if wthr_rsrce == '':
         return
-    if weather_resource is None:
-        weather_resource = form.combo10w.currentText()
+    if wthr_rsrce is None:
+        wthr_rsrce = form.combo10w.currentText()
         '''
-        form.wthr_settings_prev[weather_resource] = record_weather_settings(scenario, hist_strt_year, hist_end_year,
+        form.wthr_settings_prev[wthr_rsrce] = record_weather_settings(scenario, hist_strt_year, hist_end_year,
                                                                                         fut_strt_year, fut_end_year)
         '''
 
     # invoked when setting up the GUI or when there has been a change in weather resource
     # ===================================================================================
-    if weather_resource not in form.weather_set_linkages:
-        print('weather resource ' + weather_resource + ' not in weather_set_linkages, cannot proceed')
+    if wthr_rsrce not in form.weather_set_linkages:
+        print('weather resource ' + wthr_rsrce + ' not in weather_set_linkages, cannot proceed')
         return
 
-    weather_set_linkage = form.weather_set_linkages[weather_resource]
+    weather_set_linkage = form.weather_set_linkages[wthr_rsrce]
     wthr_set_hist = weather_set_linkage[0]
     wthr_set_fut  = weather_set_linkage[1]
     start_year = form.wthr_sets[wthr_set_hist]['year_start']
@@ -96,8 +93,8 @@ def change_weather_resource(form, weather_resource = None):
     for year in fut_eyears:
         form.combo11e.addItem(str(year))
 
-    if weather_resource in form.wthr_settings_prev:
-        wthr_settings_prev = form.wthr_settings_prev[weather_resource]
+    if wthr_rsrce in form.wthr_settings_prev:
+        wthr_settings_prev = form.wthr_settings_prev[wthr_rsrce]
         form.combo09s.setCurrentIndex(wthr_settings_prev['hist_strt_year'])
         form.combo09e.setCurrentIndex(wthr_settings_prev['hist_end_year'])
         form.combo10.setCurrentIndex(wthr_settings_prev['scenario'])
@@ -106,7 +103,7 @@ def change_weather_resource(form, weather_resource = None):
 
     return
 
-def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
+def _fetch_weather_nc_parms(nc_fname, wthr_rsrce, resol_time, scenario):
     """
     create object describing weather dataset characteristics
     """
@@ -114,7 +111,7 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
     # standard names
     # ==============
     time_var_name = 'time'
-    if weather_resource == 'NASA' or weather_resource[0:5] == 'EObs_' or weather_resource[0:8] == 'ClimGen_':
+    if wthr_rsrce == 'NASA' or wthr_rsrce[0:5] == 'EObs_' or wthr_rsrce[0:8] == 'ClimGen_':
         lat = 'latitude'
         lon = 'longitude'
     else:
@@ -131,10 +128,20 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
 
     lat_var = nc_dset.variables[lat]
     lon_var = nc_dset.variables[lon]
-    lat_frst = float(lat_var[0])
-    lon_frst = float(lon_var[0])
-    lat_last = float(lat_var[-1])
-    lon_last = float(lon_var[-1])
+
+    # use list comprehension to convert to floats
+    # ===========================================
+    if wthr_rsrce.find('EObs_') == 0:
+        lats = [round(float(lat), 2) for lat in list(lat_var)]  # rounding introduced for EObs
+        lons = [round(float(lon), 2) for lon in list(lon_var)]
+    else:
+        lats = [round(float(lat), 8) for lat in list(lat_var)]  # rounding introduced for NCAR_CCSM4
+        lons = [round(float(lon), 8) for lon in list(lon_var)]
+
+    lat_frst = lats[0]
+    lon_frst = lons[0]
+    lat_last = lats[-1]
+    lon_last = lons[-1]
 
     if lat_last > lat_frst:
         lat_ll = lat_frst; lat_ur = lat_last
@@ -148,29 +155,32 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
 
     # resolutions
     # ===========
-    resol_lon = round(abs((lon_var[-1] - lon_var[0])/(len(lon_var) - 1)), 5)
-    resol_lat = round(abs((lat_var[-1] - lat_var[0])/(len(lat_var) - 1)), 5)
-    if resol_lat != resol_lon:
-        print(WARNING + '- weather resource {} has different lat/lon resolutions: {} {}'
-                                                        .format(weather_resource, resol_lat, resol_lon))
+    resol_lon = (lons[-1] - lons[0])/(len(lons) - 1)
+    resol_lat = (lats[-1] - lats[0])/(len(lats) - 1)
+    if abs(resol_lat) != abs(resol_lon):
+        print('Warning - weather resource {} has different lat/lon resolutions: {} {}'
+                                                        .format(wthr_rsrce, resol_lat, resol_lon))
 
     # Get the start and end date of the time series (as datetime objects):
     # ====================================================================
-    if weather_resource[0:8] == 'ClimGen_':
-        # print(weather_resource + ' future time units attribute: ' + time_var.units)
+    if wthr_rsrce[0:8] == 'ClimGen_':
+        # print(wthr_rsrce + ' future time units attribute: ' + time_var.units)
         start_year = int(time_var.units.split(' ')[-1])
         end_year = start_year + int(len(time_var)/12) - 1
     else:
         time_var_units = time_var.units
-        start_date = num2date(int(time_var[0]), units = time_var_units, calendar = calendar_attr)
-        end_date = num2date(int(time_var[-1]), units = time_var_units, calendar = calendar_attr)
+        start_day = int(time_var[0])
+        try:
+            start_date = num2date(start_day, units = time_var_units, calendar = calendar_attr)
+        except (TypeError) as err:
+            print('Error deriving start and end year for dataset: ' + nc_fname)
+            return None
+
+        end_day = int(time_var[-1])
+        end_date = num2date(end_day, units = time_var_units, calendar = calendar_attr)
         start_year = start_date.year
         end_year = end_date.year
 
-    # use list comprehension to convert to floats
-    # ===========================================
-    longitudes = [round(float(longi),8) for longi in lon_var]
-    latitudes =  [round(float(lati),8) for lati in lat_var]
     nc_dset.close()
 
     # construct weather_resource
@@ -178,11 +188,11 @@ def _fetch_weather_nc_parms(nc_fname, weather_resource, resol_time, scenario):
     wthr_rsrc = {'year_start': start_year,  'year_end': end_year,
             'resol_lat': resol_lat, 'lat_frst': lat_frst, 'lat_last': lat_last, 'lat_ll': lat_ll, 'lat_ur': lat_ur,
             'resol_lon': resol_lon, 'lon_frst': lon_frst, 'lon_last': lon_last, 'lon_ll': lon_ll, 'lon_ur': lon_ur,
-            'longitudes': longitudes, 'latitudes': latitudes,
+            'longitudes': lons, 'latitudes': lats,
             'resol_time': resol_time,  'scenario': scenario}
 
     print('{} start and end year: {} {}\tresolution: {} degrees'
-            .format(weather_resource, wthr_rsrc['year_start'],  wthr_rsrc['year_end'], abs(wthr_rsrc['resol_lat'])))
+            .format(wthr_rsrce, wthr_rsrc['year_start'],  wthr_rsrc['year_end'], abs(wthr_rsrc['resol_lat'])))
 
     return wthr_rsrc
 
@@ -195,11 +205,11 @@ def read_weather_dsets_detail(form):
     # weather set linkages
     # ====================
     form.amma_2050_allowed_gcms = {}
-    weather_resources_generic = list([])
+    wthr_rsrces_generic = list([])
     weather_set_linkages = {}
     wthr_sets = {}
 
-    form.weather_resources_generic = weather_resources_generic
+    form.weather_resources_generic = wthr_rsrces_generic
     form.weather_set_linkages = weather_set_linkages
     form.wthr_sets = wthr_sets
     form.wthr_settings_prev = {}
@@ -220,11 +230,12 @@ def read_weather_dsets_detail(form):
         wthr_rsrce = 'EObs_Mnth'
         eobs_fnames = glob(eobs_mnthly_dir + '/[rr-tg]*Monthly.nc')
         if len(eobs_fnames) > 0:
-            wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(eobs_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+            wthr_nc_parms = _fetch_weather_nc_parms(eobs_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+            wthr_sets[wthr_rsrce] = wthr_nc_parms
             wthr_sets[wthr_rsrce]['base_dir']   = eobs_mnthly_dir
             wthr_sets[wthr_rsrce]['ds_precip']  = eobs_fnames[0]
             wthr_sets[wthr_rsrce]['ds_tas']     = eobs_fnames[1]
-            weather_resources_generic.append(generic_resource)
+            wthr_rsrces_generic.append(generic_resource)
             weather_set_linkages[generic_resource] = list([wthr_rsrce, wthr_rsrce])
         else:
             print('No EObs monthly datasets present in ' + eobs_mnthly_dir)
@@ -241,7 +252,7 @@ def read_weather_dsets_detail(form):
             wthr_sets[wthr_rsrce]['base_dir']   = harmonie_dir
             wthr_sets[wthr_rsrce]['ds_precip']  = harmonie_fnames[0]
             wthr_sets[wthr_rsrce]['ds_tas']     = harmonie_fnames[1]
-            weather_resources_generic.append(generic_resource)
+            wthr_rsrces_generic.append(generic_resource)
             weather_set_linkages[generic_resource] = list([wthr_rsrce, wthr_rsrce])
         else:
             print('No HARMONIE datasets present in ' + harmonie_dir)
@@ -258,7 +269,7 @@ def read_weather_dsets_detail(form):
             wthr_sets[wthr_rsrce]['base_dir']   = ncar_mnthly_dir
             wthr_sets[wthr_rsrce]['ds_precip']  = ncar_fnames[0]
             wthr_sets[wthr_rsrce]['ds_tas']     = ncar_fnames[1]
-            weather_resources_generic.append(generic_resource)
+            wthr_rsrces_generic.append(generic_resource)
             weather_set_linkages[generic_resource] = list([wthr_rsrce, wthr_rsrce])
         else:
             print('No ' + wthr_rsrce + ' monthly datasets present in ' + ncar_mnthly_dir)
@@ -305,12 +316,12 @@ def read_weather_dsets_detail(form):
             print('ClimGen datasets not present in ' + climgen_dir)
 
     if cru_flag and climgen_flag:
-        weather_resources_generic.append(generic_resource)
+        wthr_rsrces_generic.append(generic_resource)
         weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
     else:
         print('CRU historic or future datasets incomplete in ' + climgen_dir + 'or' + cru_dir)
 
-    form.weather_resources_generic = weather_resources_generic
+    form.weather_resources_generic = wthr_rsrces_generic
     form.weather_set_linkages = weather_set_linkages
     form.wthr_sets = wthr_sets
 
@@ -369,8 +380,8 @@ def write_csv_wthr_file(lgr, country, gcm_name, scenario, latitude, longitude,
     metrics_fname = join(out_dir, short_fname)
     try:
         fhand_out = open(metrics_fname, 'w')
-    except PermissionError as e:
-        print(str(e))
+    except PermissionError as err:
+        print(str(err))
         return
 
     # stanza for Potentional Evapotranspiration [mm/month]
