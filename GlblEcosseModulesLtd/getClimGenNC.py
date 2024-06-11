@@ -32,10 +32,10 @@ ngranularity = 120
 weather_resource_permitted = list(['CRU', 'EObs', 'EWEMBI'])
 
 def _consistency_check(pettmp, varnams_mapped):
-    '''
+    """
     make sure for a each key if one metric is zero length then all other metrics for that key are also blank
     TODO: this function only works for two metrics and is unpythonic!
-    '''
+    """
     metric_list = list(varnams_mapped.values())
     metric0 = metric_list[0]
     metric1 = metric_list[1]
@@ -52,9 +52,9 @@ def _consistency_check(pettmp, varnams_mapped):
     return pettmp
 
 def _check_list_for_none(metric_list):
-    '''
+    """
     if a None is found then return an empty list
-    '''
+    """
     for indx, val in enumerate(metric_list):
         if val is None:
             return []
@@ -68,12 +68,11 @@ def _input_txt_line_layout(data, comment):
         return '{}{}# {}\n'.format(data, spacer, comment)
 
 class ClimGenNC(object,):
+    """
 
+    """
     def __init__(self, form):
-        """
-        # typically form.inpnc_dir = r'E:\mark2mike\climgenNC'  (get climgen future climate netCDF4 data from here)
-        #           form.inp_hist_dir = r'E:\mark2mike\fut_data'  (get CRU historic climate netCDF4 data from here)
-        """
+
         func_name =  __prog__ +  ' ClimGenNC __init__'
 
         # determine user choices
@@ -261,10 +260,10 @@ class ClimGenNC(object,):
         return aoi_indices_fut, aoi_indices_hist
 
     def fetch_ewembi_NC_data(self, aoi_indices, num_band, future_flag = True):
-        '''
+        """
         get precipitation or temperature data for a given variable and lat/long index for all times
         CRU uses NETCDF4 format
-        '''
+        """
         func_name = __prog__ +  ' fetch_fut_future_NC_data'
         warnings.simplefilter('default')
 
@@ -352,10 +351,10 @@ class ClimGenNC(object,):
         return pettmp
 
     def fetch_eobs_NC_data(self, aoi_indices, num_band, future_flag = True):
-        '''
+        """
         get precipitation or temperature data for a given variable and lat/long index for all times
         EObs uses NETCDF format
-        '''
+        """
         func_name = __prog__ +  ' fetch_eobs_NC_data'
         warnings.simplefilter('default')
 
@@ -423,10 +422,10 @@ class ClimGenNC(object,):
         return pettmp
 
     def fetch_ncar_ccsm4_NC_data(self, aoi_indices, num_band, future_flag = True):
-        '''
+        """
         get precipitation or temperature data for a given variable and lat/long index for all times
         CORDEX uses NETCDF3_64BIT format
-        '''
+        """
         func_name = __prog__ +  ' fetch_ncar_ccsm4_NC_data'
         warnings.simplefilter('default')
 
@@ -506,9 +505,9 @@ class ClimGenNC(object,):
         return pettmp
 
     def fetch_harmonie_NC_data(self, aoi_indices, num_band, future_flag = True):
-        '''
+        """
         get precipitation or temperature data for a given variable and lat/long index for all times
-        '''
+        """
         func_name = __prog__ +  ' fetch_harmonie_NC_data'
         warnings.simplefilter('default')
 
@@ -588,10 +587,10 @@ class ClimGenNC(object,):
         return pettmp
 
     def fetch_cru_future_NC_data(self, aoi_indices, num_band, fut_start_indx = 0):
-        '''
+        """
         get precipitation or temperature data for a given variable and lat/long index for all times
         CRU uses NETCDF4 format
-        '''
+        """
         func_name = __prog__ +  ' fetch_fut_future_NC_data'
         warnings.simplefilter('default')
 
@@ -654,10 +653,10 @@ class ClimGenNC(object,):
         return pettmp
 
     def fetch_cru_historic_NC_data(self, aoi_indices, num_band):
-        '''
+        """
         get precipitation or temperature data for a given variable and lat/long index for all times
         CRU uses NETCDF4 format
-        '''
+        """
         func_name = __prog__ +  ' fetch_historic_NC_data'
         warnings.simplefilter('default')
 
@@ -718,11 +717,11 @@ class ClimGenNC(object,):
         return pettmp
 
     def create_FutureAverages(self, clim_dir, lat_inp, granLat, long_inp, granLon):
-        '''
+        """
         use prexisting metyyyys.txt files to generate a text file of average weather which will subsequently
         be included in the input.txt file
         also create a climate file for each of the simulation years based on average weather from the CRU year range
-        '''
+        """
         func_name =  ' create_FutureAverages'
         full_func_name =  __prog__ +  func_name
 
