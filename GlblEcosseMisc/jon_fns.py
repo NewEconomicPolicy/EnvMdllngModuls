@@ -14,10 +14,11 @@ __version__ = '0.0.0'
 # ---------------
 #
 from shutil import copytree
-from os import listdir, makedirs
+from os import listdir, makedirs, mkdir
 from os.path import exists, split, join, isdir
 from time import time
 from datetime import timedelta
+from win32api import GetVolumeInformation
 
 from PyQt5.QtWidgets import QApplication
 
@@ -108,28 +109,55 @@ def _update_progress(last_time, w_prgrss, rcp, ncopied, ndirs2cpy):
 
     return last_time
 
-def create_bash_script(form, san_disk_drve = 'J:\\'):
+def create_bash_script(form, san_disk_drv, out_drv = 'F:\\'):
     """
-    write a linux scrip to copy data
+    write a linux script to copy data from SanDisk
     """
-    wthr_inp_dir = join(san_disk_drve, 'ECOSSE_RCP')
+    wthr_inp_dir = join(san_disk_drv, 'ECOSSE_RCP')
+    from_drv = san_disk_drv.lower()[0]
+    to_drv = out_drv.lower()[0]
 
     print('\n')
 
     out_recs = []
 
+    for dn in ['ECOSSE_LTA', 'ECOSSE_RCP', 'temp']:
+        out_dir = join(out_drv, 'PortableSSD', dn)
+        if not isdir(out_dir):
+            makedirs(out_dir)
+
     for rcp in listdir(wthr_inp_dir):
-        cmd_str = 'cp -pr /mnt/j/ECOSSE_LTA/' + rcp + ' /mnt/g/PortableSSD/ECOSSE_LTA'
-        out_recs.append(cmd_str + '\n')
+        if rcp.find('rcp') == 0:
+            cmd_str = 'cp -pr /mnt/' + from_drv + '/ECOSSE_LTA/' + rcp + ' /mnt/' + to_drv + '/PortableSSD/ECOSSE_LTA'
+            out_recs.append(cmd_str + '\n')
 
     out_recs.append('\n')
 
     for rcp in listdir(wthr_inp_dir):
-        cmd_str = 'cp -pr /mnt/j/ECOSSE_RCP/' + rcp + ' /mnt/g/PortableSSD/ECOSSE_RCP'
-        out_recs.append(cmd_str + '\n')
+        if rcp.find('rcp') == 0:
+            cmd_str = 'cp -pr /mnt/' + from_drv + '/ECOSSE_RCP/' + rcp + ' /mnt/' + to_drv + '/PortableSSD/ECOSSE_RCP'
+            out_recs.append(cmd_str + '\n')
 
-    fn = 'E:\\temp\\bash_script.sh'
+    fn = join(out_dir, 'bash_script.sh')
     with open(fn, 'w') as fbash:
         fbash.writelines(out_recs)
+    print('Wrote:  ' + fn)
 
     return
+
+def identify_ssd(prtbl_ssd = 'PortableSSD'):
+    '''
+    check SSD is accessible
+    '''
+    ssd_found = False
+    for drive in range(ord('D'), ord('Z')):
+        drv_chr = chr(drive)
+        if exists(drv_chr + ':'):
+            drive_win = drv_chr + ':\\'
+            vol_info = GetVolumeInformation(drive_win)
+            if vol_info[0] == prtbl_ssd:
+                use_drive = drive_win
+                ssd_found = True
+                break
+
+    return ssd_found, use_drive, prtbl_ssd
