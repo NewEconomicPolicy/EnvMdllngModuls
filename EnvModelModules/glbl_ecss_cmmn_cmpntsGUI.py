@@ -136,7 +136,8 @@ def calculate_grid_cell(form, granularity = GRANULARITY):
 
     return resol_deg
 
-def print_resource_locations(setup_file, config_dir, hwsd_dir, wthr_dir, lta_nc_fname, sims_dir, log_dir):
+def print_resource_locations(setup_file, config_dir, hwsd_dir, wthr_dir, lta_nc_fname, sims_dir, log_dir,
+                             ecss_fns_dir=None):
     """
     report settings
     """
@@ -151,6 +152,9 @@ def print_resource_locations(setup_file, config_dir, hwsd_dir, wthr_dir, lta_nc_
 
     print('\tsimulations:         ' + sims_dir)
     print('\tlog_dir:             ' + log_dir)
+
+    if ecss_fns_dir is not None:
+        print('\tEcosse files:   ' + ecss_fns_dir)
     print('')
 
     return
