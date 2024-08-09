@@ -14,7 +14,7 @@ __version__ = '0.0.0'
 # ---------------
 #
 from shutil import copytree
-from os import listdir, makedirs, mkdir
+from os import listdir, makedirs, walk
 from os.path import exists, split, join, isdir
 from time import time
 from datetime import timedelta
@@ -26,6 +26,20 @@ ERROR_STR = '*** Error *** '
 WARNING_STR = '*** Warning *** '
 N_DECIM = 4
 sleepTime = 5
+
+
+def integrity_check(form):
+    """
+    C
+    """
+    root_dir = 'G:\\PortableSSD\\ECOSSE_RCP'
+    for short_dir in listdir(root_dir):
+        dir_name = join(root_dir, short_dir)
+        for dir_nm, subdirs_raw, files in walk(dir_name):
+            print('{} {} {}'.format(dir_nm, len(subdirs_raw), len(files)))
+            break
+
+    return
 
 def copy_jon_lta_data(form, use_drive, out_drive):
     """
