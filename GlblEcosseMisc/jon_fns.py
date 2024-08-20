@@ -1,12 +1,10 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        jon_fns.py
 # Purpose:     script to create objects describing NC data sets
 # Author:      Mike Martin
 # Created:     31/05/2020
 # Licence:     <your licence>
-#-------------------------------------------------------------------------------
-#!/usr/bin/env python
-
+# -------------------------------------------------------------------------------
 __prog__ = 'jon_fns.py'
 __version__ = '0.0.0'
 
@@ -146,9 +144,9 @@ def create_bash_script(form, san_disk_drv, out_drv = 'F:\\'):
     return
 
 def identify_ssd(prtbl_ssd = 'PortableSSD'):
-    '''
+    """
     check SSD is accessible
-    '''
+    """
     ssd_found = False
     use_drive = None
     for drive in range(ord('D'), ord('Z')):
