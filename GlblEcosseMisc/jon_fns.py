@@ -111,6 +111,10 @@ def create_bash_script(form, san_disk_drv, out_drv = 'F:\\'):
     """
     write a linux script to copy data from SanDisk
     """
+    if not isdir(out_drv):
+        print(WARNING_STR + 'Please select a valid output directory')
+        return
+
     wthr_inp_dir = join(san_disk_drv, 'ECOSSE_RCP')
     from_drv = san_disk_drv.lower()[0]
     to_drv = out_drv.lower()[0]
@@ -147,8 +151,9 @@ def identify_ssd(prtbl_ssd = 'PortableSSD'):
     """
     check SSD is accessible
     """
-    ssd_found = False
     use_drive = None
+
+    ssd_found = False
     for drive in range(ord('D'), ord('Z')):
         drv_chr = chr(drive)
         if exists(drv_chr + ':'):
