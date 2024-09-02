@@ -52,6 +52,8 @@ def copy_jon_lta_data(form, use_drive, out_drive):
         if icntr > 0:
             break
 
+    return
+
 def copy_jon_wthr_data(form, use_drive, out_drive):
     """
      assumption if that SSD data is consistent
@@ -66,6 +68,8 @@ def copy_jon_wthr_data(form, use_drive, out_drive):
     ncopied_all = 0
     for rcp in listdir(wthr_inp_dir):
         dirnm_inp = join(wthr_inp_dir, rcp)
+        if not isdir(dirnm_inp):
+            continue
         dirs_to_copy = listdir(dirnm_inp)
         ndirs2cpy = len(dirs_to_copy)
 
@@ -75,7 +79,7 @@ def copy_jon_wthr_data(form, use_drive, out_drive):
         for coord in dirs_to_copy:
             coord_dir_inp = join(dirnm_inp, coord)
             coord_dir_out = join(dirnm_out, coord)
-            if exists(coord_dir_out):
+            if isdir(coord_dir_out):
                 continue
             else:
                 last_time = _update_progress(last_time, form.w_prgrss, rcp, ncopied, ndirs2cpy)
@@ -90,6 +94,7 @@ def copy_jon_wthr_data(form, use_drive, out_drive):
     mess = '\nFinished after N copies: {}\ttime taken: '.format(ncopied_all)
     mess += str(timedelta(seconds=scnds_elapsed))
     form.w_prgrss.setText(mess)
+    print(mess + '\n')
 
     return
 
@@ -116,7 +121,6 @@ def create_bash_script(form, san_disk_drv, out_drv):
     from_drv = san_disk_drv.lower()[0]
     to_drv = out_drv.lower()[0]
     out_recs = []
-
 
     for drnm in ['ECOSSE_LTA', 'ECOSSE_RCP', 'temp']:
         out_dir = join(out_drv, 'PortableSSD', drnm)
