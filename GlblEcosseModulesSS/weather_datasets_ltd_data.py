@@ -287,56 +287,57 @@ def read_weather_dsets_detail(form):
 
     # check CRU historic
     # ==================
-    print('')
-    generic_resource = 'CRU'
-    cru_flag = False
-    valid_wthr_dset_rsrces = []
-    cru_dir  = weather_dir + '\\CRU_Data'
-    if lexists(cru_dir):
-        wthr_rsrce = 'CRU_hist'
-        cru_fnames = glob(cru_dir + '/cru*dat.nc')
-        if len(cru_fnames) > 0:
-            wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(cru_fnames[0], wthr_rsrce, 'Monthly', 'historic')
-            wthr_sets[wthr_rsrce]['base_dir']   = cru_dir
-            wthr_sets[wthr_rsrce]['ds_precip']  = cru_fnames[0]
-            wthr_sets[wthr_rsrce]['ds_tas']     = cru_fnames[1]
-            wthr_sets[wthr_rsrce]['precip'] = 'pre'
-            wthr_sets[wthr_rsrce]['tas']    = 'tmp'
-            valid_wthr_dset_rsrces.append(wthr_rsrce)
-            cru_flag = True
-        else:
-            print('No CRU historic datasets present in ' + cru_dir)
-
-        # check ClimGen
-        # =============
-        climgen_flag = False
-        for dset_scenario in list(['A1B','A2','B1','B2']):
-            climgen_dir = join(weather_dir, 'ClimGen', dset_scenario)
-            wthr_rsrce = 'ClimGen_' + dset_scenario
-            if lexists(climgen_dir):
-                climgen_fnames = glob(climgen_dir + '\\*.nc')
-                if len(climgen_fnames) > 0:
-                    wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(climgen_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
-                    wthr_sets[wthr_rsrce]['base_dir']   = climgen_dir
-                    wthr_sets[wthr_rsrce]['ds_precip']  = climgen_fnames[0]
-                    wthr_sets[wthr_rsrce]['ds_tas']     = climgen_fnames[1]
-                    wthr_sets[wthr_rsrce]['precip'] = 'precipitation'
-                    wthr_sets[wthr_rsrce]['tas'] = 'temperature'
-                    valid_wthr_dset_rsrces.append(wthr_rsrce)
-                    climgen_flag = True
+    if generic_resource in rqrd_rsrces:
+        print('')
+        generic_resource = 'CRU'
+        cru_flag = False
+        valid_wthr_dset_rsrces = []
+        cru_dir  = weather_dir + '\\CRU_Data'
+        if lexists(cru_dir):
+            wthr_rsrce = 'CRU_hist'
+            cru_fnames = glob(cru_dir + '/cru*dat.nc')
+            if len(cru_fnames) > 0:
+                wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(cru_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+                wthr_sets[wthr_rsrce]['base_dir']   = cru_dir
+                wthr_sets[wthr_rsrce]['ds_precip']  = cru_fnames[0]
+                wthr_sets[wthr_rsrce]['ds_tas']     = cru_fnames[1]
+                wthr_sets[wthr_rsrce]['precip'] = 'pre'
+                wthr_sets[wthr_rsrce]['tas']    = 'tmp'
+                valid_wthr_dset_rsrces.append(wthr_rsrce)
+                cru_flag = True
             else:
-                print('ClimGen datasets not present in ' + climgen_dir)
+                print('No CRU historic datasets present in ' + cru_dir)
 
+            # check ClimGen
+            # =============
+            climgen_flag = False
+            for dset_scenario in list(['A1B','A2','B1','B2']):
+                climgen_dir = join(weather_dir, 'ClimGen', dset_scenario)
+                wthr_rsrce = 'ClimGen_' + dset_scenario
+                if lexists(climgen_dir):
+                    climgen_fnames = glob(climgen_dir + '\\*.nc')
+                    if len(climgen_fnames) > 0:
+                        wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(climgen_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
+                        wthr_sets[wthr_rsrce]['base_dir']   = climgen_dir
+                        wthr_sets[wthr_rsrce]['ds_precip']  = climgen_fnames[0]
+                        wthr_sets[wthr_rsrce]['ds_tas']     = climgen_fnames[1]
+                        wthr_sets[wthr_rsrce]['precip'] = 'precipitation'
+                        wthr_sets[wthr_rsrce]['tas'] = 'temperature'
+                        valid_wthr_dset_rsrces.append(wthr_rsrce)
+                        climgen_flag = True
+                else:
+                    print('ClimGen datasets not present in ' + climgen_dir)
+
+            if cru_flag and climgen_flag:
+                wthr_rsrces_generic.append(generic_resource)
+                weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
+            else:
+                print('CRU historic or future datasets incomplete in ' + climgen_dir + ' or ' + cru_dir)
         if cru_flag and climgen_flag:
             wthr_rsrces_generic.append(generic_resource)
             weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
         else:
             print('CRU historic or future datasets incomplete in ' + climgen_dir + ' or ' + cru_dir)
-    if cru_flag and climgen_flag:
-        wthr_rsrces_generic.append(generic_resource)
-        weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
-    else:
-        print('CRU historic or future datasets incomplete in ' + climgen_dir + ' or ' + cru_dir)
 
     # check WorldClim historic
     # ========================
