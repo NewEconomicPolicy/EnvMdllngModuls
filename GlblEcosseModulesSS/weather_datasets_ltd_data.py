@@ -224,6 +224,7 @@ def read_weather_dsets_detail(form):
 
     # check EObs monthly: rr_ and tg_
     # ===============================
+    print('')
     generic_resource = 'EObs'
     eobs_mnthly_dir  = weather_dir + '\\EObs_v23\\Monthly'
     if lexists(eobs_mnthly_dir):
@@ -259,6 +260,7 @@ def read_weather_dsets_detail(form):
 
     # check NASA monthly
     # ==================
+    print('')
     generic_resource = 'NCAR_CCSM4'
     ncar_mnthly_dir  = weather_dir + '\\NCAR_CCSM4\\Monthly'
     if lexists(ncar_mnthly_dir):
@@ -276,6 +278,7 @@ def read_weather_dsets_detail(form):
 
     # check CRU historic
     # ==================
+    print('')
     generic_resource = 'CRU'
     cru_flag = False
     valid_wthr_dset_rsrces = []
@@ -319,7 +322,59 @@ def read_weather_dsets_detail(form):
         wthr_rsrces_generic.append(generic_resource)
         weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
     else:
-        print('CRU historic or future datasets incomplete in ' + climgen_dir + 'or' + cru_dir)
+        print('CRU historic or future datasets incomplete in ' + climgen_dir + ' or ' + cru_dir)
+
+    # check WorldClim historic
+    # ========================
+    print('')
+    generic_resource = 'WrldClim'
+    wrld_hist_flag = False
+    valid_wthr_dset_rsrces = []
+    wrld_hist_dir = join(weather_dir, 'WrldClim_hist', 'Monthly')
+    if lexists(wrld_hist_dir):
+        wthr_rsrce = 'WrldClim_hist'
+        wrldclim_fnames = glob(wrld_hist_dir + '/wc*10m*.nc')
+        if len(wrld_hist_dir) > 0:
+            wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(wrldclim_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+            wthr_sets[wthr_rsrce]['base_dir'] = wrld_hist_dir
+            wthr_sets[wthr_rsrce]['ds_precip'] = wrldclim_fnames[0]
+            wthr_sets[wthr_rsrce]['ds_tas'] = wrldclim_fnames[1]
+            wthr_sets[wthr_rsrce]['precip'] = 'prec'
+            wthr_sets[wthr_rsrce]['tas'] = 'tave'
+            valid_wthr_dset_rsrces.append(wthr_rsrce)
+            wrld_hist_flag = True
+        else:
+            print('No WorldClim historic datasets present in ' + wrld_hist_dir)
+
+    # check WorldClim ssps
+    # ====================
+    wrldclim_flag = False
+    gcm = 'UKESM1-0-LL'
+    for dset_scenario in list(['126', '245', '370', '585']):
+        wrldclim_dir = join(weather_dir, 'WrldClim_ssps', 'Monthly', gcm, dset_scenario)
+        wthr_rsrce = gcm + '_' + dset_scenario
+        if lexists(wrldclim_dir):
+            wrldclim_fnames = glob(wrldclim_dir + '\\*.nc')
+            if len(wrldclim_fnames) > 0:
+                wthr_sets[wthr_rsrce] = _fetch_weather_nc_parms(wrldclim_fnames[0], wthr_rsrce, 'Monthly',
+                                                                dset_scenario)
+                wthr_sets[wthr_rsrce]['base_dir'] = wrldclim_dir
+                wthr_sets[wthr_rsrce]['ds_precip'] = wrldclim_fnames[0]
+                wthr_sets[wthr_rsrce]['ds_tas'] = wrldclim_fnames[1]
+                wthr_sets[wthr_rsrce]['precip'] = 'prec'
+                wthr_sets[wthr_rsrce]['tas'] = 'tave'
+                valid_wthr_dset_rsrces.append(wthr_rsrce)
+                wrldclim_flag = True
+        else:
+            print('WorldClim datasets not present in ' + wrldclim_dir)
+
+    if wrld_hist_flag and wrldclim_flag:
+        wthr_rsrces_generic.append(generic_resource)
+        weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
+    else:
+        print('WorldClim historic or future datasets incomplete in ' + wrldclim_dir + ' or ' + wrld_hist_dir)
+
+    # ============================ End of World Clim =======================================================
 
     form.weather_resources_generic = wthr_rsrces_generic
     form.weather_set_linkages = weather_set_linkages
