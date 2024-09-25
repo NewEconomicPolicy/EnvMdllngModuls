@@ -52,6 +52,8 @@ def copy_jon_lta_data(form, use_drive, out_drive):
         if icntr > 0:
             break
 
+    return
+
 def copy_jon_wthr_data(form, use_drive, out_drive):
     """
      assumption if that SSD data is consistent
@@ -66,6 +68,8 @@ def copy_jon_wthr_data(form, use_drive, out_drive):
     ncopied_all = 0
     for rcp in listdir(wthr_inp_dir):
         dirnm_inp = join(wthr_inp_dir, rcp)
+        if not isdir(dirnm_inp):
+            continue
         dirs_to_copy = listdir(dirnm_inp)
         ndirs2cpy = len(dirs_to_copy)
 
@@ -75,7 +79,7 @@ def copy_jon_wthr_data(form, use_drive, out_drive):
         for coord in dirs_to_copy:
             coord_dir_inp = join(dirnm_inp, coord)
             coord_dir_out = join(dirnm_out, coord)
-            if exists(coord_dir_out):
+            if isdir(coord_dir_out):
                 continue
             else:
                 last_time = _update_progress(last_time, form.w_prgrss, rcp, ncopied, ndirs2cpy)
@@ -90,6 +94,7 @@ def copy_jon_wthr_data(form, use_drive, out_drive):
     mess = '\nFinished after N copies: {}\ttime taken: '.format(ncopied_all)
     mess += str(timedelta(seconds=scnds_elapsed))
     form.w_prgrss.setText(mess)
+    print(mess + '\n')
 
     return
 
@@ -107,38 +112,35 @@ def _update_progress(last_time, w_prgrss, rcp, ncopied, ndirs2cpy):
 
     return last_time
 
-def create_bash_script(form, san_disk_drv, out_drv = 'F:\\'):
+def create_bash_script(form, san_disk_drv, out_drv):
     """
     write a linux script to copy data from SanDisk
     """
-    if not isdir(out_drv):
-        print(WARNING_STR + 'Please select a valid output directory')
-        return
-
-    wthr_inp_dir = join(san_disk_drv, 'ECOSSE_RCP')
-    from_drv = san_disk_drv.lower()[0]
-    to_drv = out_drv.lower()[0]
-
     print('\n')
 
+    from_drv = san_disk_drv.lower()[0]
+    to_drv = out_drv.lower()[0]
     out_recs = []
 
-    for dn in ['ECOSSE_LTA', 'ECOSSE_RCP', 'temp']:
-        out_dir = join(out_drv, 'PortableSSD', dn)
+    for drnm in ['ECOSSE_LTA', 'ECOSSE_RCP', 'temp']:
+        out_dir = join(out_drv, 'PortableSSD', drnm)
         if not isdir(out_dir):
             makedirs(out_dir)
 
-    for rcp in listdir(wthr_inp_dir):
-        if rcp.find('rcp') == 0:
-            cmd_str = 'cp -pr /mnt/' + from_drv + '/ECOSSE_LTA/' + rcp + ' /mnt/' + to_drv + '/PortableSSD/ECOSSE_LTA'
-            out_recs.append(cmd_str + '\n')
+        if drnm == 'temp':
+            continue
 
-    out_recs.append('\n')
+        wthr_inp_dir = join(san_disk_drv, drnm)
+        if not isdir(wthr_inp_dir):
+            continue
 
-    for rcp in listdir(wthr_inp_dir):
-        if rcp.find('rcp') == 0:
-            cmd_str = 'cp -pr /mnt/' + from_drv + '/ECOSSE_RCP/' + rcp + ' /mnt/' + to_drv + '/PortableSSD/ECOSSE_RCP'
-            out_recs.append(cmd_str + '\n')
+        for rcp in listdir(wthr_inp_dir):
+            if rcp.find('rcp') == 0:
+                out_recs.append('start=$(date +%s)' + '\r')
+                cmd_str = 'cp -pr /mnt/' + from_drv + '/' + drnm + '/' + rcp + ' /mnt/' + to_drv + '/PortableSSD/' + drnm
+                out_recs.append(cmd_str + '\r')
+                out_recs.append('end=$(date +%s)' + '\r')
+                out_recs.append('echo "Elapsed Time: $(($end-$start)) seconds"' + '\r')
 
     fn = join(out_dir, 'bash_script.sh')
     with open(fn, 'w') as fbash:
@@ -147,21 +149,22 @@ def create_bash_script(form, san_disk_drv, out_drv = 'F:\\'):
 
     return
 
-def identify_ssd(prtbl_ssd = 'PortableSSD'):
+def identify_ssd():
     """
     check SSD is accessible
     """
-    use_drive = None
+    PRTBL_SSD_LIST = ['PortableSSD', 'Extreme SSD']
 
     ssd_found = False
+    use_drive = None
     for drive in range(ord('D'), ord('Z')):
         drv_chr = chr(drive)
         if exists(drv_chr + ':'):
             drive_win = drv_chr + ':\\'
             vol_info = GetVolumeInformation(drive_win)
-            if vol_info[0] == prtbl_ssd:
+            if vol_info[0] in PRTBL_SSD_LIST:
                 use_drive = drive_win
                 ssd_found = True
                 break
 
-    return ssd_found, use_drive, prtbl_ssd
+    return ssd_found, use_drive, vol_info[0]
