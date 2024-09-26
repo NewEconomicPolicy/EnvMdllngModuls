@@ -13,6 +13,7 @@ __author__ = 's03mm5'
 
 from numpy import isnan
 from netCDF4 import Dataset
+from warnings import filterwarnings
 
 WARNING = '*** Warning *** '
 
@@ -113,10 +114,12 @@ def open_wthr_NC_sets(climgen):
 
     return hist_wthr_dsets, fut_wthr_dsets
 
-def fetch_CRU_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hist_flag = False):
+def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hist_flag = False):
     '''
 
     '''
+    filterwarnings("error")
+
     pettmp = {}
     for metric in list(['precip', 'tas']):
         if hist_flag:
@@ -124,13 +127,21 @@ def fetch_CRU_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hist_fl
             slice = nc_dsets[metric].variables[varname][:, lat_indx, lon_indx]
         else:
             varname = climgen.fut_wthr_set_defn[metric]
-            slice = nc_dsets[metric].variables[varname][lat_indx, lon_indx, :]
+            slice = nc_dsets[metric].variables[varname][:, lat_indx, lon_indx]
 
-        if isnan(float(slice[0])):
+        try:
+            if isnan(float(slice[0])):
+                pettmp = None
+                lgr.info('is nan hist_flag: {}\tlat: {} {}\tlon: {} {}'.format(hist_flag, lat, lat_indx, lon,
+                                                                                   lon_indx))
+                break
+            else:
+                pettmp[metric] = [float(val) for val in slice]
+        except UserWarning as wrnng:
+            lgr.info(str(wrnng) + ' hist_flag: {}\tlat: {} {}\tlon: {} {}'.format(hist_flag, lat, lat_indx, lon, lon_indx))
             pettmp = None
-            break
         else:
-            pettmp[metric] = [float(val) for val in slice]
+            pass
 
     return pettmp
 
@@ -168,13 +179,14 @@ def check_clim_nc_limits(form, bbox_aoi = None, wthr_rsrce = 'CRU') :
     """
     func_name =  __prog__ + ' check_clim_nc_limits'
 
+    limits_ok_flag = True
+    '''
     if hasattr(form, 'combo10w'):
         wthr_rsrce = form.combo10w.currentText()
-
-    limits_ok_flag = True
+    
     if wthr_rsrce == 'NASA' or wthr_rsrce == 'CRU':
         return limits_ok_flag
-
+    '''
     lon_ll_aoi = float(form.w_ll_lon.text())
     lat_ll_aoi = float(form.w_ll_lat.text())
     lon_ur_aoi = float(form.w_ur_lon.text())
