@@ -18,10 +18,10 @@ from warnings import filterwarnings
 WARNING = '*** Warning *** '
 
 def _apply_start_year_correction(sim_strt_yr, hist_dset_defn, pettmp):
-    '''
+    """
     assume monthly datasets
     check and, if necessary, correct situation where sim_strt_yr is before historic dataset start year
-    '''
+    """
     repeat_period = (hist_dset_defn['year_start'] - sim_strt_yr)*12
     if repeat_period <= 0:
         return pettmp
@@ -33,9 +33,9 @@ def _apply_start_year_correction(sim_strt_yr, hist_dset_defn, pettmp):
     return new_pettmp
 
 def _fetch_wthrset_indices(wthr_set_defn, sim_strt_yr, sim_end_yr):
-    '''
+    """
     get indices for simulation years for monthly weather set
-    '''
+    """
     wthr_yr_strt = wthr_set_defn['year_start']
     wthr_yr_end = wthr_set_defn['year_end']
 
@@ -66,10 +66,10 @@ def _fetch_wthrset_indices(wthr_set_defn, sim_strt_yr, sim_end_yr):
     return indx_strt, indx_end, next_strt_yr
 
 def join_hist_fut_to_sim_wthr(climgen, pettmp_hist, pettmp_fut, start_from_1801 = None):
-    '''
+    """
     join historic and future weather
     TODO: can be made more efficient by doing this once
-    '''
+    """
     sim_strt_yr = climgen.sim_start_year
     sim_end_yr = climgen.sim_end_year
     indx_hist_strt, indx_hist_end, next_strt_yr = \
@@ -102,9 +102,9 @@ def join_hist_fut_to_sim_wthr(climgen, pettmp_hist, pettmp_fut, start_from_1801 
     return pettmp_sim
 
 def open_wthr_NC_sets(climgen):
-    '''
+    """
 
-    '''
+    """
     hist_wthr_dsets = {}
     fut_wthr_dsets = {}
 
@@ -115,9 +115,9 @@ def open_wthr_NC_sets(climgen):
     return hist_wthr_dsets, fut_wthr_dsets
 
 def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hist_flag = False):
-    '''
+    """
 
-    '''
+    """
     filterwarnings("error")
 
     pettmp = {}
@@ -146,9 +146,9 @@ def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hi
     return pettmp
 
 def get_wthr_nc_coords(dset_defn, latitude, longitude):
-    '''
+    """
 
-    '''
+    """
     lon_frst = dset_defn['lon_frst']
     lat_frst = dset_defn['lat_frst']
     resol_lat = dset_defn['resol_lat']
@@ -160,12 +160,12 @@ def get_wthr_nc_coords(dset_defn, latitude, longitude):
     lon_indx = int(round((longitude - lon_frst)/resol_lon))
 
     if lat_indx < 0 or lat_indx > max_lat_indx:
-        print('*** Warning *** latitude index {} out of bounds for latitude {}\tmax indx: {}'
+        print(WARNING + 'latitude index {} out of bounds for latitude {}\tmax indx: {}'
                                                             .format(lat_indx, round(latitude, 4), max_lat_indx))
         return -1, -1
 
     if lon_indx < 0 or lon_indx > max_lon_indx:
-        print('*** Warning *** longitude index {} out of bounds for longitude {}\tmax indx: {}'
+        print(WARNING + 'longitude index {} out of bounds for longitude {}\tmax indx: {}'
                                                             .format(lon_indx, round(longitude, 4), max_lon_indx))
         return -1, -1
 

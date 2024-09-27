@@ -363,7 +363,13 @@ def read_weather_dsets_detail(form):
         # ====================
         wrldclim_flag = False
         wrldclim_root_dir = join(weather_dir, 'WrldClim_ssps', 'Monthly')
+
+        # speed up initialisation if requested
+        # ====================================
         gcms = listdir(wrldclim_root_dir)
+        if form.settings['last_gcm_only_flag']:
+            del(gcms[:-1])
+
         for gcm in gcms:
             print('')
             for dset_scenario in list(['126', '245', '370', '585']):
