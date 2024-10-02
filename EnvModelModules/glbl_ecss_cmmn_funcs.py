@@ -583,7 +583,10 @@ def write_signature_file(sim_dir, mu_global, soil, latitude, longitude, province
 
     signature_fname = join(sim_dir, str(mu_global) + '.txt')
     with open(signature_fname, 'w') as fsig:
-        json_dump(config, fsig, indent=2, sort_keys=True)
+        try:
+            json_dump(config, fsig, indent=2, sort_keys=True)
+        except DeprecationWarning as err:
+            print(str(err))
 
     return
 

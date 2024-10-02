@@ -15,6 +15,7 @@ from numpy import isnan
 from netCDF4 import Dataset
 from warnings import filterwarnings
 
+ERROR_STR = '*** Error *** '
 WARNING = '*** Warning *** '
 
 def _apply_start_year_correction(sim_strt_yr, hist_dset_defn, pettmp):
@@ -124,7 +125,11 @@ def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hi
     for metric in list(['precip', 'tas']):
         if hist_flag:
             varname = climgen.hist_wthr_set_defn[metric]
-            slice = nc_dsets[metric].variables[varname][:, lat_indx, lon_indx]
+            try:
+                slice = nc_dsets[metric].variables[varname][:, lat_indx, lon_indx]
+            except BaseException as err:
+                print(ERROR_STR + str(err))
+                return None
         else:
             varname = climgen.fut_wthr_set_defn[metric]
             slice = nc_dsets[metric].variables[varname][:, lat_indx, lon_indx]
