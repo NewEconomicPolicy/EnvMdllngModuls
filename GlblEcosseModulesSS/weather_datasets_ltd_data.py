@@ -395,7 +395,7 @@ def read_weather_dsets_detail(form):
             wthr_rsrces_generic.append(generic_resource)
             weather_set_linkages[generic_resource] = valid_wthr_dset_rsrces
         else:
-            print('WorldClim historic or future datasets incomplete in ' + wrldclim_dir + ' or ' + wrld_hist_dir)
+            print('WorldClim historic or future datasets incomplete in ' + wrldclim_root_dir + ' or ' + wrld_hist_dir)
 
     # ============================ End of World Clim =======================================================
 
