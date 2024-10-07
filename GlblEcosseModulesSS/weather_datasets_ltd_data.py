@@ -51,7 +51,7 @@ def change_weather_resource(form, wthr_rsrce = None):
 
     # invoked when setting up the GUI or when there has been a change in weather resource
     # ===================================================================================
-    if wthr_rsrce not in form.weather_set_linkages:
+    if wthr_rsrce not in form.weather_set_linkages['WrldClim']:
         print('weather resource ' + wthr_rsrce + ' not in weather_set_linkages, cannot proceed')
         return
 
