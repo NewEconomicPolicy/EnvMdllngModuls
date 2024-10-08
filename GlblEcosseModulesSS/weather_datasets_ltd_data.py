@@ -51,7 +51,7 @@ def change_weather_resource(form, wthr_rsrce = None):
 
     # invoked when setting up the GUI or when there has been a change in weather resource
     # ===================================================================================
-    if wthr_rsrce not in form.weather_set_linkages:
+    if wthr_rsrce not in form.weather_set_linkages['WrldClim']:
         print('weather resource ' + wthr_rsrce + ' not in weather_set_linkages, cannot proceed')
         return
 
@@ -229,7 +229,6 @@ def read_weather_dsets_detail(form):
 
     # check EObs monthly: rr_ and tg_
     # ===============================
-    print('')
     generic_resource = 'EObs'
     if generic_resource in rqrd_rsrces:
         print('')
@@ -269,7 +268,6 @@ def read_weather_dsets_detail(form):
 
     # check NCAR_CCSM4 monthly
     # =======================
-    print('')
     generic_resource = 'NCAR_CCSM4'
     if generic_resource in rqrd_rsrces:
         print('')

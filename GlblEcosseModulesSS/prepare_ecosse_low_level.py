@@ -13,7 +13,8 @@ __version__ = '1.0.00'
 __prog__ = 'prepare_ecosse_files.py'
 
 import csv
-import os
+from os.path import join, exists, split, lexists
+from os import makedirs, fsync, remove
 from time import time
 import sys
 from calendar import isleap
@@ -98,7 +99,7 @@ def write_study_definition_file(form):
 
     # copy to sims area
     if study != '':
-        study_defn_file = os.path.join(form.setup['sims_dir'], study + '_study_definition.txt')
+        study_defn_file = join(form.setup['sims_dir'], study + '_study_definition.txt')
         with open(study_defn_file, 'w') as fstudy:
             json.dump(study_defn, fstudy, indent=2, sort_keys=True)
             print('\nWrote study definition file ' + study_defn_file)
@@ -122,7 +123,7 @@ def write_line_summary(form, coord_frst, coord_last, max_cells_in_line, max_cell
                                 gran_lat_last, gran_lon_last, round(latitude_last,6), round(longitude_last,6),
                                                     max_cells_in_line, max_cells_in_cluster))
     form.fstudy[1].flush()
-    os.fsync(form.fstudy[1].fileno())
+    fsync(form.fstudy[1].fileno())
     return
 
 def write_study_manifest_files(form, lon_lats):
@@ -137,10 +138,10 @@ def write_study_manifest_files(form, lon_lats):
     # ==================================
     form.fstudy = []
     for frag_name in list(['_','_summary_']):
-        study_fname = os.path.join(form.setup['sims_dir'], form.setup['study'] + frag_name + 'manifest.csv')
-        if os.path.exists(study_fname):
+        study_fname = join(form.setup['sims_dir'], form.setup['study'] + frag_name + 'manifest.csv')
+        if exists(study_fname):
             try:
-                os.remove(study_fname)
+                remove(study_fname)
             except PermissionError as err:
                 print('*** Warning *** ' + str(err))
                 return
@@ -191,8 +192,8 @@ def write_manifest_file(study, fut_clim_scen, sim_dir, soil_list, mu_global, lat
 
     # construct file name and write
     # =============================
-    manif_dir, fname_part2 = os.path.split(sim_dir)
-    manifest_fname = os.path.join(manif_dir, 'manifest_' + fname_part2[:-4] + '.txt')
+    manif_dir, fname_part2 = split(sim_dir)
+    manifest_fname = join(manif_dir, 'manifest_' + fname_part2[:-4] + '.txt')
     with open(manifest_fname, 'w') as fmanif:
         json.dump(manifest, fmanif, indent=2, sort_keys=True)
 
@@ -230,7 +231,7 @@ def write_signature_file(lgr, sim_dir, mu_global, soil, latitude, longitude, pro
                 '%_sand': soil[11]
             }
 
-    signature_fname = os.path.join(sim_dir, str(mu_global) + '.txt')
+    signature_fname = join(sim_dir, str(mu_global) + '.txt')
     with open(signature_fname, 'w') as fsig:
         try:
             json.dump(config, fsig, indent=2, sort_keys=True)
@@ -308,16 +309,16 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
 
     # check if met files already exist
     # ================================
-    if os.path.lexists(clim_dir):
+    if lexists(clim_dir):
         nyears = end_year - start_year + 1
         met_files = glob(clim_dir + '\\met*s.txt')
         if len(met_files) == nyears:
             for met_file in met_files:
-                dummy, short_name = os.path.split(met_file)
+                dummy, short_name = split(met_file)
                 met_fnames.append(short_name)
             return met_fnames
     else:
-        os.makedirs(clim_dir)
+        makedirs(clim_dir)
 
     # create met files
     # ================
@@ -325,7 +326,7 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
     for year in range(start_year, end_year + 1):
         fname = 'met{}s.txt'.format(year)
         met_fnames.append(fname)
-        met_path = os.path.join(clim_dir, fname)
+        met_path =join(clim_dir, fname)
 
         if climgen.sim_mnthly_flag:
             ntime_incrs = 12

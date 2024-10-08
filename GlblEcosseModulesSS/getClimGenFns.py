@@ -176,7 +176,6 @@ def get_wthr_nc_coords(dset_defn, latitude, longitude):
 
     return lat_indx, lon_indx
 
-
 def check_clim_nc_limits(form, bbox_aoi = None, wthr_rsrce = 'CRU') :
 
     """
@@ -214,4 +213,3 @@ def check_clim_nc_limits(form, bbox_aoi = None, wthr_rsrce = 'CRU') :
         limits_ok_flag = False
 
     return limits_ok_flag
-
