@@ -177,7 +177,6 @@ def get_wthr_nc_coords(dset_defn, latitude, longitude):
     return lat_indx, lon_indx
 
 def check_clim_nc_limits(form, bbox_aoi = None, wthr_rsrce = 'CRU') :
-
     """
     this function checks that the specified bounding box lies within extent of the requested weather dataset
     """

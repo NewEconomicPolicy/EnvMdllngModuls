@@ -262,9 +262,9 @@ def update_progress(last_time, ncompleted, nskipped, ntotal_grow, ngrowing, nno_
     return last_time
 
 def _get_thornthwaite(temp_mean, latitude, year):
-    '''
+    """
     feed daily annual temperatures to Thornthwaite equations to estimate Potential Evapotranspiration [mm/month]
-    '''
+    """
     func_name =  __prog__ + ' _get_thornthwaite'
 
     ntime_steps = len(temp_mean)
@@ -298,9 +298,9 @@ def _get_thornthwaite(temp_mean, latitude, year):
     return pet_daily
 
 def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
-    '''
+    """
     feed annual temperatures to Thornthwaite equations to estimate Potential Evapotranspiration [mm/month]
-    '''
+    """
     precip = pettmp_fut_grid_cell['precip']
     temp   = pettmp_fut_grid_cell['tas']
     start_year = climgen.sim_start_year
