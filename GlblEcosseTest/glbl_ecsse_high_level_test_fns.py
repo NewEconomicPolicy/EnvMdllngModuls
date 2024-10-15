@@ -8,7 +8,6 @@
 #-------------------------------------------------------------------------------
 #
 """
-
 __prog__ = 'glbl_ecsse_high_level_fns.py'
 __version__ = '0.0.1'
 __author__ = 's03mm5'
@@ -26,9 +25,9 @@ REGION_ABBREVS = ['Australasia', 'Africa','Asia', 'Europe','NAmerica','SAmerica'
 SKIP_GRAFT = True   # avoid IO intensive overhead to test Mean N Application spreadsheet methodology
 
 def all_generate_banded_sims_test(form, all_regions_flag = True):
-    '''
+    """
 
-    '''
+    """
     nstudies = len(form.studies)
     ncombo = form.combo00s.count()
     if nstudies != ncombo:
@@ -68,11 +67,11 @@ def all_generate_banded_sims_test(form, all_regions_flag = True):
             generate_banded_sims_test(form, region, crop_name)
 
 def generate_banded_sims_test(form, region, crop_name):
-    '''
+    """
     called from GUI
     NB  vars ending in _dset indicate netCDF4 dataset objects
         vars ending in _defn are objects which comprising NC file attributes e.g. resolution, extents, file location
-    '''
+    """
     year_from = int(form.w_yr_from.text())
 
     if form.w_ave_wthr.isChecked():

@@ -43,7 +43,7 @@ def change_weather_resource(form, wthr_rsrce = None):
     if wthr_rsrce == '':
         return
     if wthr_rsrce is None:
-        wthr_rsrce = form.combo10w.currentText()
+        wthr_rsrce = form.w_combo10w.currentText()
         '''
         form.wthr_settings_prev[wthr_rsrce] = record_weather_settings(scenario, hist_strt_year, hist_end_year,
                                                                                         fut_strt_year, fut_end_year)
@@ -51,11 +51,12 @@ def change_weather_resource(form, wthr_rsrce = None):
 
     # invoked when setting up the GUI or when there has been a change in weather resource
     # ===================================================================================
+    '''
     if wthr_rsrce not in form.weather_set_linkages['WrldClim']:
         print('weather resource ' + wthr_rsrce + ' not in weather_set_linkages, cannot proceed')
         return
-
-    weather_set_linkage = form.weather_set_linkages[wthr_rsrce]
+    '''
+    weather_set_linkage = form.weather_set_linkages['WrldClim']
     wthr_set_hist = weather_set_linkage[0]
     wthr_set_fut  = weather_set_linkage[1]
     start_year = form.wthr_sets[wthr_set_hist]['year_start']
@@ -76,33 +77,33 @@ def change_weather_resource(form, wthr_rsrce = None):
     for wthr_set in weather_set_linkage[1:]:
         scenarios.append(form.wthr_sets[wthr_set]['scenario'])
 
-    form.combo10.clear()
+    form.w_combo10.clear()
     for scenario in scenarios:
-        form.combo10.addItem(str(scenario))
+        form.w_combo10.addItem(str(scenario))
 
-    form.combo09s.clear()
+    form.w_combo09s.clear()
     for year in hist_syears:
-        form.combo09s.addItem(str(year))
+        form.w_combo09s.addItem(str(year))
 
-    form.combo09e.clear()
+    form.w_combo09e.clear()
     for year in hist_eyears:
-        form.combo09e.addItem(str(year))
+        form.w_combo09e.addItem(str(year))
 
-    form.combo11s.clear()
+    form.w_combo11s.clear()
     for year in fut_syears:
-        form.combo11s.addItem(str(year))
+        form.w_combo11s.addItem(str(year))
 
-    form.combo11e.clear()
+    form.w_combo11e.clear()
     for year in fut_eyears:
-        form.combo11e.addItem(str(year))
+        form.w_combo11e.addItem(str(year))
 
     if wthr_rsrce in form.wthr_settings_prev:
         wthr_settings_prev = form.wthr_settings_prev[wthr_rsrce]
-        form.combo09s.setCurrentIndex(wthr_settings_prev['hist_strt_year'])
-        form.combo09e.setCurrentIndex(wthr_settings_prev['hist_end_year'])
-        form.combo10.setCurrentIndex(wthr_settings_prev['scenario'])
-        form.combo11s.setCurrentIndex(wthr_settings_prev['fut_strt_year'])
-        form.combo11e.setCurrentIndex(wthr_settings_prev['fut_end_year'])
+        form.w_combo09s.setCurrentIndex(wthr_settings_prev['hist_strt_year'])
+        form.w_combo09e.setCurrentIndex(wthr_settings_prev['hist_end_year'])
+        form.w_combo10.setCurrentIndex(wthr_settings_prev['scenario'])
+        form.w_combo11s.setCurrentIndex(wthr_settings_prev['fut_strt_year'])
+        form.w_combo11e.setCurrentIndex(wthr_settings_prev['fut_end_year'])
 
     return
 
@@ -412,7 +413,7 @@ def report_aoi_size(form, lon_ll, lat_ll, lon_ur, lat_ur):
 
     # this will be initially only NASA
     # ================================
-    resource = form.combo10w.currentText()
+    resource = form.w_combo10w.currentText()
     weather_set = form.wthr_sets[resource]
     resol_lat = weather_set['resol_lat']
     lat0 = weather_set['lat0']
