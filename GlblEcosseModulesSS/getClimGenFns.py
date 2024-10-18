@@ -1,3 +1,4 @@
+"""
 #-------------------------------------------------------------------------------
 # Name:        getClimGenFns.py
 # Purpose:     additional functions for getClimGenNC.py
@@ -5,9 +6,8 @@
 # Created:     08/02/2018
 # Copyright:   (c) s03mm5 2015
 # Licence:     <your licence>
-#-------------------------------------------------------------------------------
-#!/usr/bin/env python
-
+# -------------------------------------------------------------------------------
+"""
 __prog__ = 'getClimGenFns.py'
 __author__ = 's03mm5'
 
@@ -50,7 +50,7 @@ def _fetch_wthrset_indices(wthr_set_defn, sim_strt_yr, sim_end_yr):
     if wthr_yr_strt > sim_end_yr:
         return 3 * [None]
 
-    indx_strt = max (0, (sim_strt_yr - wthr_yr_strt)*12)
+    indx_strt = max(0, (sim_strt_yr - wthr_yr_strt)*12)
 
     if sim_end_yr >= wthr_yr_end:
 
@@ -66,17 +66,17 @@ def _fetch_wthrset_indices(wthr_set_defn, sim_strt_yr, sim_end_yr):
 
     return indx_strt, indx_end, next_strt_yr
 
-def join_hist_fut_to_sim_wthr(climgen, pettmp_hist, pettmp_fut, start_from_1801 = None):
+def join_hist_fut_to_sim_wthr(climgen, pettmp_hist, pettmp_fut):
     """
     join historic and future weather
     TODO: can be made more efficient by doing this once
     """
     sim_strt_yr = climgen.sim_start_year
     sim_end_yr = climgen.sim_end_year
-    indx_hist_strt, indx_hist_end, next_strt_yr = \
-                                    _fetch_wthrset_indices(climgen.hist_wthr_set_defn, sim_strt_yr, sim_end_yr)
-
-    indx_fut_strt, indx_fut_end, dummy = _fetch_wthrset_indices(climgen.fut_wthr_set_defn, next_strt_yr, sim_end_yr)
+    indx_hist_strt, indx_hist_end, next_strt_yr = _fetch_wthrset_indices(climgen.hist_wthr_set_defn,
+                                                                            sim_strt_yr, sim_end_yr)
+    indx_fut_strt, indx_fut_end, dummy = _fetch_wthrset_indices(climgen.fut_wthr_set_defn,
+                                                                            next_strt_yr, sim_end_yr)
 
     pettmp_sim = {}
     for metric in pettmp_hist:
@@ -104,20 +104,20 @@ def join_hist_fut_to_sim_wthr(climgen, pettmp_hist, pettmp_fut, start_from_1801 
 
 def open_wthr_NC_sets(climgen):
     """
-
+    C
     """
     hist_wthr_dsets = {}
     fut_wthr_dsets = {}
 
     for metric, ds_fname in zip(list(['precip', 'tas']), list(['ds_precip', 'ds_tas'])):
-        hist_wthr_dsets[metric] = Dataset(climgen.hist_wthr_set_defn[ds_fname], mode='r')
-        fut_wthr_dsets[metric]  = Dataset(climgen.fut_wthr_set_defn[ds_fname], mode='r')
+        hist_wthr_dsets[metric] = Dataset(climgen.hist_wthr_set_defn[ds_fname])
+        fut_wthr_dsets[metric] = Dataset(climgen.fut_wthr_set_defn[ds_fname])
 
     return hist_wthr_dsets, fut_wthr_dsets
 
-def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hist_flag = False):
+def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hist_flag=False):
     """
-
+    C
     """
     filterwarnings("error")
 
@@ -148,16 +148,16 @@ def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hi
 
 def get_wthr_nc_coords(dset_defn, latitude, longitude):
     """
-
+    C
     """
     lon_frst = dset_defn['lon_frst']
     lat_frst = dset_defn['lat_frst']
     resol_lat = dset_defn['resol_lat']
     resol_lon = dset_defn['resol_lon']
-    max_lat_indx = len(dset_defn['latitudes'])  - 1
+    max_lat_indx = len(dset_defn['latitudes']) - 1
     max_lon_indx = len(dset_defn['longitudes']) - 1
 
-    lat_indx = int(round((latitude  - lat_frst)/resol_lat))
+    lat_indx = int(round((latitude - lat_frst)/resol_lat))
     lon_indx = int(round((longitude - lon_frst)/resol_lon))
 
     if lat_indx < 0 or lat_indx > max_lat_indx:
