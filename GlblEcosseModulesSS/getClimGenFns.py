@@ -11,7 +11,7 @@
 __prog__ = 'getClimGenFns.py'
 __author__ = 's03mm5'
 
-from numpy import isnan
+from numpy.ma.core import MaskedConstant, MaskError
 from netCDF4 import Dataset
 from warnings import filterwarnings
 
@@ -134,19 +134,15 @@ def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hi
             varname = climgen.fut_wthr_set_defn[metric]
             slice = nc_dsets[metric].variables[varname][:, lat_indx, lon_indx]
 
-        try:
-            if isnan(float(slice[0])):
-                pettmp = None
-                lgr.info('is nan hist_flag: {}\tlat: {} {}\tlon: {} {}'.format(hist_flag, lat, lat_indx, lon,
-                                                                                   lon_indx))
-                break
-            else:
-                pettmp[metric] = [float(val) for val in slice]
-        except UserWarning as wrnng:
-            lgr.info(str(wrnng) + ' hist_flag: {}\tlat: {} {}\tlon: {} {}'.format(hist_flag, lat, lat_indx, lon, lon_indx))
+        # test to see if cell data is valid, if not then this location is probably sea
+        # =============================================================================
+        if type(slice[0]) is MaskedConstant:
             pettmp = None
+            mess = 'No data at lat: {} {}\tlon: {} {}\thist_flag: {}'.format(lat, lat_indx, lon, lon_indx, hist_flag)
+            lgr.info(mess)
+            print(mess)
         else:
-            pass
+            pettmp[metric] = [float(val) for val in slice]
 
     return pettmp
 
