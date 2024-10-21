@@ -13,7 +13,7 @@ __version__ = '1.0.00'
 __prog__ = 'prepare_ecosse_files.py'
 
 import csv
-from os.path import join, exists, split, lexists
+from os.path import join, exists, split, isdir
 from os import makedirs, fsync, remove
 from time import time
 import sys
@@ -301,6 +301,12 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
     """
     feed annual temperatures to Thornthwaite equations to estimate Potential Evapotranspiration [mm/month]
     """
+    if not isdir(clim_dir):
+        return
+
+    if pettmp_fut_grid_cell is None:
+        return
+
     precip = pettmp_fut_grid_cell['precip']
     temp   = pettmp_fut_grid_cell['tas']
     start_year = climgen.sim_start_year
@@ -309,16 +315,18 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
 
     # check if met files already exist
     # ================================
-    if lexists(clim_dir):
-        nyears = end_year - start_year + 1
-        met_files = glob(clim_dir + '\\met*s.txt')
-        if len(met_files) == nyears:
-            for met_file in met_files:
-                dummy, short_name = split(met_file)
-                met_fnames.append(short_name)
-            return met_fnames
-    else:
-        makedirs(clim_dir)
+
+    nyears = end_year - start_year + 1
+    met_files = glob(clim_dir + '\\met*s.txt')
+    if len(met_files) == nyears:
+        for met_file in met_files:
+            dummy, short_name = split(met_file)
+            met_fnames.append(short_name)
+        return met_fnames
+
+
+    if pettmp_fut_grid_cell is None:
+        return
 
     # create met files
     # ================
