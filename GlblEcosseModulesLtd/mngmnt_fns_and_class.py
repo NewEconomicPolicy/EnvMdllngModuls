@@ -22,7 +22,7 @@ from glob import glob
 ERROR_STR = '*** Error *** '
 WARN_STR = '*** Warning *** '
 CNVRSN_FACT = 10000 * 365 / 1000  # gC/m**2/day to kgC/ha/yr
-OCHIDEE_MANDAT_VARS = ('lat', 'lon', 'veget', 'TOTAL_BM_LITTER_c')
+OCHIDEE_MANDAT_VARS = ('lat', 'lon', 'veget', 'TOTAL_BM_LITTER_c', 'TOTAL_LITTER_SOIL_c')
 OCHIDEE_OVERRIDE_YEAR = 1970
 
 def check_ochidee_dset(nc_fname):
@@ -50,7 +50,7 @@ class OchideeSet(object, ):
     """
     Create object from an OCHIDEE NC file
     """
-    def __init__(self, nc_fname, pfts):
+    def __init__(self, nc_fname, pfts, carbon_var):
         """
         assumption is that dataset has been pre-checked using check_ochidee_dset function
         """
@@ -151,11 +151,10 @@ class OchideeSet(object, ):
         aves = {}
         for pft_indx in range(nvegets):
             pft_key = '{0:0=2d}'.format(pft_indx + 1)
-            tmp_vals = nc_dset.variables['TOTAL_BM_LITTER_c'][:, pft_indx, :, :]
+            tmp_vals = nc_dset.variables[carbon_var][:, pft_indx, :, :]       # TOTAL_BM_LITTER_c or TOTAL_LITTER_SOIL_c
 
             if tmp_vals.sum() == 0.0:
                 print('\t' + WARN_STR + 'No data for vegetation type: ' + pft_key + ' PFT: ' + pfts[pft_key])
-                continue
 
             vals[pft_key] = tmp_vals
             aves[pft_key] = CNVRSN_FACT * tmp_vals.mean()
@@ -201,7 +200,15 @@ class OchideeSet(object, ):
             plnt_inpts = {'yrs': [], 'pis': []}
             strt_yr = self.start_year
             nyears = self.nyears
-            vals = list(self.vals[pft_key][:, lat_indx, lon_indx])
+            if pft_key is None:
+                vals = nyears * [0]
+            else:
+                slice = self.vals[pft_key][:, lat_indx, lon_indx]
+                is_masked = ma.is_masked(slice)
+                if is_masked:
+                    vals = ma.getdata(slice)
+                else:
+                    vals = list(slice)
 
             plnt_inpts['yrs'] = [yr for yr in range(strt_yr, strt_yr + nyears)]
             plnt_inpts['pis'] = [CNVRSN_FACT * val for val in vals]
