@@ -66,6 +66,7 @@ def initiation(form, variation=''):
     default_model_switches = join(cwDir, fname_model_switches)
     if isfile(default_model_switches):
         form.default_model_switches = default_model_switches
+        print('\tmodel switches file: ' + default_model_switches + '\n')
     else:
         print('{0} file does not exist in directory {1}'.format(fname_model_switches, cwDir))
         sleep(sleepTime)
