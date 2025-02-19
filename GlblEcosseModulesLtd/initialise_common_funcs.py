@@ -309,11 +309,7 @@ def _read_setup_file(form, fname_setup):
         sleep(sleepTime)
         exit(0)
 
-    if lexists(weather_dir):
-        form.weather_dir = weather_dir
-        form.settings['weather_dir'] = weather_dir
-
-        # sims dir checked later
+    # sims dir checked later
     # ======================
     form.sims_dir = sims_dir
 

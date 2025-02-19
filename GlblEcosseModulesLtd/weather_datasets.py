@@ -190,7 +190,7 @@ def _fetch_weather_nc_parms(nc_fname, wthr_rsrce, resol_time, scenario):
 
     return wthr_rsrc
 
-def read_weather_dsets_detail(form, rqrd_rsces = EXSTNG_WTHR_RSRCS):
+def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
     """
     ascertain the year span for historic datasets
     TODO: replace with approach adopted for Site Specific version of Global Ecosse
