@@ -278,16 +278,16 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
         # check ClimGen
         # =============
         climgen_flag = False
-        for dset_scenario in list(['A1B','A2','B1','B2']):
+        for dset_scenario in list(['A1B', 'A2', 'B1', 'B2']):
             climgen_dir = join(weather_dir, 'ClimGen', dset_scenario)
             wthr_rsrce = 'ClimGen_' + dset_scenario
             if isdir(climgen_dir):
                 climgen_fnames = glob(climgen_dir + '/*.nc')
                 if len(climgen_fnames) > 0:
                     weather_sets[wthr_rsrce] = fetch_weather_nc_parms(climgen_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
-                    weather_sets[wthr_rsrce]['base_dir']   = climgen_dir
-                    weather_sets[wthr_rsrce]['ds_precip']  = climgen_fnames[0]
-                    weather_sets[wthr_rsrce]['ds_tas']     = climgen_fnames[1]
+                    weather_sets[wthr_rsrce]['base_dir'] = climgen_dir
+                    weather_sets[wthr_rsrce]['ds_precip'] = climgen_fnames[0]
+                    weather_sets[wthr_rsrce]['ds_tas'] = climgen_fnames[1]
                     valid_wthr_dset_rsrces.append(wthr_rsrce)
                     climgen_flag = True
             else:
@@ -504,7 +504,7 @@ def record_weather_settings(scenario, hist_strt_year, hist_end_year, fut_strt_ye
                                                     'fut_strt_year': fut_strt_year, 'fut_end_year': fut_end_year}
     return previous_settings
 
-def change_weather_resource(form, weather_resource = None):
+def change_weather_resource(form, weather_resource=None):
     """
     during initialisation, weather_resource will be specified
     otherwise get it from GUI
@@ -526,16 +526,16 @@ def change_weather_resource(form, weather_resource = None):
 
     weather_set_linkage = form.weather_set_linkages[weather_resource]
     wthr_set_hist = weather_set_linkage[0]
-    wthr_set_fut  = weather_set_linkage[1]
+    wthr_set_fut = weather_set_linkage[1]
     start_year = form.weather_sets[wthr_set_hist]['year_start']
-    end_year   = form.weather_sets[wthr_set_hist]['year_end']
+    end_year = form.weather_sets[wthr_set_hist]['year_end']
     hist_syears = list(range(start_year, end_year))
     hist_eyears = list(range(start_year + 1, end_year + 1))
 
     # simulation years can extend back into historical period
     # =======================================================
     start_year = min(1970, end_year)
-    end_year   = form.weather_sets[wthr_set_fut]['year_end']
+    end_year = form.weather_sets[wthr_set_fut]['year_end']
     fut_syears = list(range(start_year, end_year))
     fut_eyears = list(range(start_year + 1, end_year + 1))
 

@@ -31,12 +31,10 @@ def read_isimip_wthr_dsets_detail(weather_dir , gnrc_rsrce):
     weather_sets = {}
     valid_wthr_dset_rsrces = []
 
-    cru_flag = False
-    isimip_flag = False
-
     # check CRU historic
     # ==================
-    cru_dir  = weather_dir + '/CRU_Data'
+    cru_flag = False
+    cru_dir = weather_dir + '/CRU_Data'
     if isdir(cru_dir):
         wthr_rsrce = 'CRU_hist'
         cru_fnames = sorted(glob(cru_dir + '/cru*dat.nc'))
@@ -52,29 +50,32 @@ def read_isimip_wthr_dsets_detail(weather_dir , gnrc_rsrce):
 
     # check ISIMIP
     # ============
+    isimip_flag = False
     for dset_scenario in SSPS:
         isimip_dir = join(weather_dir, gnrc_rsrce, 'Monthly', dset_scenario)
         wthr_rsrce = gnrc_rsrce + '_' + dset_scenario
         if isdir(isimip_dir):
             isimip_fnames = glob(isimip_dir + '/*.nc')
-            if len(isimip_fnames) > 0:
+            if len(isimip_fnames) > 1:
                 weather_sets[wthr_rsrce] = fetch_weather_nc_parms(isimip_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
-                weather_sets[wthr_rsrce]['base_dir']   = isimip_dir
-                weather_sets[wthr_rsrce]['ds_precip']  = isimip_fnames[1]
-                weather_sets[wthr_rsrce]['ds_tas']     = isimip_fnames[0]
+                weather_sets[wthr_rsrce]['base_dir'] = isimip_dir
+                weather_sets[wthr_rsrce]['ds_precip'] = isimip_fnames[1]
+                weather_sets[wthr_rsrce]['ds_tas'] = isimip_fnames[0]
                 valid_wthr_dset_rsrces.append(wthr_rsrce)
                 isimip_flag = True
+            else:
+                isimip_flag = False
         else:
-            print(gnrc_rsrce + ' datasets not present in ' + isimip_dir)
+            isimip_flag = False
 
-        if cru_flag and isimip_flag:
-            wthr_rsrces_generic.append(gnrc_rsrce)
-            weather_set_linkages[gnrc_rsrce] = valid_wthr_dset_rsrces
-        else:
-            if not cru_flag:
-                print('CRU historic datasets incomplete in ' + cru_dir)
-            if not isimip_flag:
-                print('ISIMIP future datasets incomplete in ' + isimip_dir)
+    if cru_flag and isimip_flag:
+        wthr_rsrces_generic.append(gnrc_rsrce)
+        weather_set_linkages[gnrc_rsrce] = valid_wthr_dset_rsrces
+    else:
+        if not cru_flag:
+            print('CRU historic datasets incomplete in ' + cru_dir)
+        if not isimip_flag:
+            print('ISIMIP future datasets incomplete in ' + isimip_dir)
 
     print('')
     return wthr_rsrces_generic, weather_set_linkages, weather_sets

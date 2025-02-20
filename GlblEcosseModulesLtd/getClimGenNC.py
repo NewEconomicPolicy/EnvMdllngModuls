@@ -62,14 +62,16 @@ def _check_list_for_none(metric_list):
     return metric_list
 
 def _input_txt_line_layout(data, comment):
-
-        spacer_len = max(set_spacer_len - len(data), 2)
-        spacer = ' ' * spacer_len
-        return '{}{}# {}\n'.format(data, spacer, comment)
+    """
+    C
+    """
+    spacer_len = max(set_spacer_len - len(data), 2)
+    spacer = ' ' * spacer_len
+    return '{}{}# {}\n'.format(data, spacer, comment)
 
 class ClimGenNC(object,):
     """
-
+    C
     """
     def __init__(self, form):
 
@@ -104,17 +106,17 @@ class ClimGenNC(object,):
                 print('key {} not in weather sets in function {} - cannot continue'.format(wthr_set_key, func_name))
                 return
             hist_weather_set = form.weather_sets[weather_resource + '_historical']
-            fut_weather_set  = form.weather_sets[weather_resource + '_' + fut_clim_scen]
+            fut_weather_set = form.weather_sets[weather_resource + '_' + fut_clim_scen]
             lat = 'lat'
             lon = 'lon'
         elif weather_resource == 'HARMONIE':
             hist_weather_set = form.weather_sets['HARMONIE_V2']
-            fut_weather_set  = form.weather_sets['HARMONIE_V2']
+            fut_weather_set = form.weather_sets['HARMONIE_V2']
             lat = 'lat'
             lon = 'lon'
         elif weather_resource == 'EObs':
             hist_weather_set = form.weather_sets['EObs_Mnth']
-            fut_weather_set  = form.weather_sets['EObs_Mnth']
+            fut_weather_set = form.weather_sets['EObs_Mnth']
             lat = 'latitude'
             lon = 'longitude'
         elif weather_resource == 'CRU':
@@ -123,12 +125,21 @@ class ClimGenNC(object,):
                 print('key {} not in weather sets in function {} - cannot continue'.format(wthr_set_key, func_name))
                 return
             hist_weather_set = form.weather_sets['CRU_hist']
-            fut_weather_set  = form.weather_sets['ClimGen_' + fut_clim_scen]
+            fut_weather_set = form.weather_sets['ClimGen_' + fut_clim_scen]
             lat = 'latitude'
             lon = 'longitude'
+        elif weather_resource == 'EFISCEN-ISIMIP':
+            wthr_set_key = 'EFISCEN-ISIMIP_' + fut_clim_scen
+            if wthr_set_key not in form.weather_sets:
+                print('key {} not in weather sets in function {} - cannot continue'.format(wthr_set_key, func_name))
+                return
+            hist_weather_set = form.weather_sets['CRU_hist']
+            fut_weather_set = form.weather_sets['EFISCEN-ISIMIP_' + fut_clim_scen]
+            lat = 'lat'
+            lon = 'lon'
         elif weather_resource == 'NCAR_CCSM4':
             hist_weather_set = form.weather_sets['NCAR_CCSM4']
-            fut_weather_set  = form.weather_sets['NCAR_CCSM4']
+            fut_weather_set = form.weather_sets['NCAR_CCSM4']
             lat = 'lat'
             lon = 'lon'
         else:
@@ -138,13 +149,13 @@ class ClimGenNC(object,):
         # make sure start and end years are within dataset limits
         # =======================================================
         hist_start_year = max(hist_weather_set['year_start'], hist_start_year)
-        hist_end_year   = min(hist_weather_set['year_end'], hist_end_year)
+        hist_end_year = min(hist_weather_set['year_end'], hist_end_year)
 
         self.ave_weather_flag = ave_weather_flag
         num_hist_years = hist_end_year - hist_start_year + 1
         self.num_hist_years = num_hist_years
         self.hist_start_year = hist_start_year
-        self.hist_end_year   = hist_end_year
+        self.hist_end_year = hist_end_year
         self.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         self.fut_clim_scen = fut_clim_scen
 
@@ -169,8 +180,8 @@ class ClimGenNC(object,):
         # past (monthly) data
         # ===================
         self.hist_precip_fname = hist_weather_set['ds_precip']
-        self.hist_tas_fname    = hist_weather_set['ds_tas']
-        self.latitudes_hist    = hist_weather_set['latitudes']
+        self.hist_tas_fname = hist_weather_set['ds_tas']
+        self.latitudes_hist = hist_weather_set['latitudes']
 
         # New stanza to facilitate option when user selects "use average weather"
         # =======================================================================
