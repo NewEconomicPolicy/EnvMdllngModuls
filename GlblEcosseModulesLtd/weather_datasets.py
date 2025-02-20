@@ -20,6 +20,8 @@ from copy import copy
 from pandas import read_csv
 from thornthwaite import thornthwaite
 
+from wthr_dsets_funcs import read_isimip_wthr_dsets_detail, fetch_weather_nc_parms
+
 CHESS_LOOKUP = 'GBR_hwsd_lkup_tble.csv'
 EXSTNG_WTHR_RSRCS = ['EObs', 'HARMONIE', 'NCAR_CCSM4', 'CRU', 'CHESS']
 REALISATIONS = list(['01', '04', '06', '15'])
@@ -91,97 +93,6 @@ def _fetch_chess_wthr_nc_parms(nc_fname, lkup_tble_df, wthr_rsrce, resol_time, s
     wthr_rsrc = {'year_start': start_year,  'year_end': end_year,
             'resol_lat': resol_lat, 'lat_frst': lat_ll, 'lat_last': lat_ur, 'lat_ll': lat_ll, 'lat_ur': lat_ur,
             'resol_lon': resol_lon, 'lon_frst': lon_ll, 'lon_last': lon_ur, 'lon_ll': lon_ll, 'lon_ur': lon_ur,
-            'longitudes': lons, 'latitudes': lats,
-            'resol_time': resol_time,  'scenario': scenario}
-
-    print('{} start and end year: {} {}\tresolution: {} degrees'
-            .format(wthr_rsrce, wthr_rsrc['year_start'],  wthr_rsrc['year_end'], abs(wthr_rsrc['resol_lat'])))
-
-    return wthr_rsrc
-
-def _fetch_weather_nc_parms(nc_fname, wthr_rsrce, resol_time, scenario):
-    """
-    create object describing weather dataset characteristics
-    """
-
-    # standard names
-    # ==============
-    time_var_name = 'time'
-    if wthr_rsrce == 'NASA' or wthr_rsrce[0:5] == 'EObs_' or wthr_rsrce[0:8] == 'ClimGen_':
-        lat = 'latitude'
-        lon = 'longitude'
-    else:
-        lat = 'lat'
-        lon = 'lon'
-
-    nc_fname = normpath(nc_fname)
-    nc_dset = Dataset(nc_fname, 'r')
-    time_var = nc_dset.variables[time_var_name]
-    if 'calendar' in time_var.ncattrs():
-        calendar_attr = time_var.calendar
-    else:
-        calendar_attr = 'standard'
-
-    lat_var = nc_dset.variables[lat]
-    lon_var = nc_dset.variables[lon]
-
-    if wthr_rsrce.find('EObs_') == 0:
-        lats = [round(float(lat), 2) for lat in list(lat_var)]  # rounding introduced for EObs
-        lons = [round(float(lon), 2) for lon in list(lon_var)]
-    else:
-        lats = [round(float(lat), 8) for lat in list(lat_var)]  # rounding introduced for NCAR_CCSM4
-        lons = [round(float(lon), 8) for lon in list(lon_var)]
-
-    lat_frst = lats[0]
-    lon_frst = lons[0]
-    lat_last = lats[-1]
-    lon_last = lons[-1]
-
-    if lat_last > lat_frst:
-        lat_ll = lat_frst; lat_ur = lat_last
-    else:
-        lat_ll = lat_last; lat_ur = lat_frst
-
-    if lon_last > lon_frst:
-        lon_ll = lon_frst; lon_ur = lon_last
-    else:
-        lon_ll = lon_last; lon_ur = lon_frst
-
-    # resolutions
-    # ===========
-    resol_lon = (lons[-1] - lons[0])/(len(lons) - 1)
-    resol_lat = (lats[-1] - lats[0])/(len(lats) - 1)
-    if abs(resol_lat) != abs(resol_lon):
-        print('Warning - weather resource {} has different lat/lon resolutions: {} {}'
-                                                        .format(wthr_rsrce, resol_lat, resol_lon))
-
-    # Get the start and end date of the time series (as datetime objects):
-    # ====================================================================
-    if wthr_rsrce[0:8] == 'ClimGen_':
-        # print(wthr_rsrce + ' future time units attribute: ' + time_var.units)
-        start_year = int(time_var.units.split(' ')[-1])
-        end_year = start_year + int(len(time_var)/12) - 1
-    else:
-        time_var_units = time_var.units
-        start_day = int(time_var[0])
-        try:
-            start_date = num2date(start_day, units = time_var_units, calendar = calendar_attr)
-        except (TypeError) as err:
-            print('Error deriving start and end year for dataset: ' + nc_fname)
-            return None
-
-        end_day = int(time_var[-1])
-        end_date = num2date(end_day, units = time_var_units, calendar = calendar_attr)
-        start_year = start_date.year
-        end_year = end_date.year
-
-    nc_dset.close()
-
-    # construct weather resource
-    # ==========================
-    wthr_rsrc = {'year_start': start_year,  'year_end': end_year,
-            'resol_lat': resol_lat, 'lat_frst': lat_frst, 'lat_last': lat_last, 'lat_ll': lat_ll, 'lat_ur': lat_ur,
-            'resol_lon': resol_lon, 'lon_frst': lon_frst, 'lon_last': lon_last, 'lon_ll': lon_ll, 'lon_ur': lon_ur,
             'longitudes': lons, 'latitudes': lats,
             'resol_time': resol_time,  'scenario': scenario}
 
@@ -295,7 +206,7 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
             wthr_rsrce = 'EObs_Mnth'
             eobs_fnames = glob(eobs_mnthly_dir + '/[rr-tg]*Monthly.nc')
             if len(eobs_fnames) > 0:
-                wthr_nc_parms =  _fetch_weather_nc_parms(eobs_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+                wthr_nc_parms =  fetch_weather_nc_parms(eobs_fnames[0], wthr_rsrce, 'Monthly', 'historic')
                 weather_sets[wthr_rsrce] = wthr_nc_parms
                 if  wthr_nc_parms is None:
                     print('Problem reading EObs monthly datasets in ' + eobs_mnthly_dir)
@@ -317,7 +228,7 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
             wthr_rsrce = 'HARMONIE_V2'
             harmonie_fnames = glob(harmonie_dir + '/cruhar*.nc')
             if len(harmonie_fnames) > 0:
-                weather_sets[wthr_rsrce] = _fetch_weather_nc_parms(harmonie_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+                weather_sets[wthr_rsrce] = fetch_weather_nc_parms(harmonie_fnames[0], wthr_rsrce, 'Monthly', 'historic')
                 weather_sets[wthr_rsrce]['base_dir']   = harmonie_dir
                 weather_sets[wthr_rsrce]['ds_precip']  = harmonie_fnames[0]
                 weather_sets[wthr_rsrce]['ds_tas']     = harmonie_fnames[1]
@@ -335,7 +246,7 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
             wthr_rsrce = 'NCAR_CCSM4'
             ncar_fnames = glob(ncar_mnthly_dir + '\\rcp26\\*_Amon*.nc')
             if len(ncar_fnames) > 0:
-                weather_sets[wthr_rsrce] = _fetch_weather_nc_parms(ncar_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+                weather_sets[wthr_rsrce] = fetch_weather_nc_parms(ncar_fnames[0], wthr_rsrce, 'Monthly', 'historic')
                 weather_sets[wthr_rsrce]['base_dir']   = ncar_mnthly_dir
                 weather_sets[wthr_rsrce]['ds_precip']  = ncar_fnames[0]
                 weather_sets[wthr_rsrce]['ds_tas']     = ncar_fnames[1]
@@ -355,7 +266,7 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
             wthr_rsrce = 'CRU_hist'
             cru_fnames = sorted(glob(cru_dir + '/cru*dat.nc'))
             if len(cru_fnames) > 0:
-                weather_sets[wthr_rsrce] = _fetch_weather_nc_parms(cru_fnames[0], wthr_rsrce, 'Monthly', 'historic')
+                weather_sets[wthr_rsrce] = fetch_weather_nc_parms(cru_fnames[0], wthr_rsrce, 'Monthly', 'historic')
                 weather_sets[wthr_rsrce]['base_dir']   = cru_dir
                 weather_sets[wthr_rsrce]['ds_precip']  = cru_fnames[0]
                 weather_sets[wthr_rsrce]['ds_tas']     = cru_fnames[1]
@@ -373,7 +284,7 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
             if isdir(climgen_dir):
                 climgen_fnames = glob(climgen_dir + '/*.nc')
                 if len(climgen_fnames) > 0:
-                    weather_sets[wthr_rsrce] = _fetch_weather_nc_parms(climgen_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
+                    weather_sets[wthr_rsrce] = fetch_weather_nc_parms(climgen_fnames[0], wthr_rsrce, 'Monthly', dset_scenario)
                     weather_sets[wthr_rsrce]['base_dir']   = climgen_dir
                     weather_sets[wthr_rsrce]['ds_precip']  = climgen_fnames[0]
                     weather_sets[wthr_rsrce]['ds_tas']     = climgen_fnames[1]
@@ -390,6 +301,12 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
                 print('CRU historic datasets incomplete in ' + cru_dir)
             if not climgen_flag:
                 print('ClimGen future datasets incomplete in ' + climgen_dir)
+
+    # check ISIMIP
+    # ============
+    gnrc_rsrce = 'EFISCEN-ISIMIP'
+    if gnrc_rsrce in rqrd_rsces:
+        wthr_rsrces_generic, weather_set_linkages, weather_sets  = read_isimip_wthr_dsets_detail(weather_dir, gnrc_rsrce)
 
     form.weather_resources_generic = wthr_rsrces_generic
     form.weather_set_linkages = weather_set_linkages

@@ -50,7 +50,7 @@ def initiation(form, variation=''):
 
     # retrieve settings
     # =================
-    _read_setup_file(form, fname_setup)
+    _read_setup_file(form, fname_setup, variation)
 
     form.glbl_ecsse_str = glbl_ecsse_str
     config_files = build_and_display_studies(form)
@@ -136,7 +136,7 @@ def check_nc_start_end_dates(nc_fname, time_var_name='time', cru_future_flag=Fal
 
     return start_year, end_year
 
-def _read_setup_file(form, fname_setup):
+def _read_setup_file(form, fname_setup, variation=''):
     """
     read settings used for programme from the setup file, if it exists,
     or create setup file using default values if file does not exist
@@ -317,8 +317,11 @@ def _read_setup_file(form, fname_setup):
     # check weather data
     # ==================
     if form.version == 'HWSD_grid':
-        rqurd_wthr_rsrcs = ['CRU', 'CHESS']
-        rqurd_wthr_rsrcs = ['CRU', 'EObs']  # required weather resources
+        if variation == '_spvc':
+            rqurd_wthr_rsrcs = ['EFISCEN-ISIMIP']
+        else:
+            rqurd_wthr_rsrcs = ['CRU', 'CHESS']
+            rqurd_wthr_rsrcs = ['CRU', 'EObs']  # required weather resources
     else:
         rqurd_wthr_rsrcs = ['CRU', 'EObs', 'HARMONIE']
 
