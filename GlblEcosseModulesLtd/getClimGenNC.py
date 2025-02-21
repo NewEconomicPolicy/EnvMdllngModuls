@@ -106,7 +106,7 @@ class ClimGenNC(object,):
                 print('key {} not in weather sets in function {} - cannot continue'.format(wthr_set_key, func_name))
                 return
             hist_weather_set = form.weather_sets[weather_resource + '_historical']
-            fut_weather_set = form.weather_sets[weather_resource + '_' + fut_clim_scen]
+            fut_weather_set = form.weather_sets[wthr_set_key]
             lat = 'lat'
             lon = 'lon'
         elif weather_resource == 'HARMONIE':
@@ -125,7 +125,7 @@ class ClimGenNC(object,):
                 print('key {} not in weather sets in function {} - cannot continue'.format(wthr_set_key, func_name))
                 return
             hist_weather_set = form.weather_sets['CRU_hist']
-            fut_weather_set = form.weather_sets['ClimGen_' + fut_clim_scen]
+            fut_weather_set = form.weather_sets[wthr_set_key]
             lat = 'latitude'
             lon = 'longitude'
         elif weather_resource == 'EFISCEN-ISIMIP':
@@ -134,7 +134,7 @@ class ClimGenNC(object,):
                 print('key {} not in weather sets in function {} - cannot continue'.format(wthr_set_key, func_name))
                 return
             hist_weather_set = form.weather_sets['CRU_hist']
-            fut_weather_set = form.weather_sets['EFISCEN-ISIMIP_' + fut_clim_scen]
+            fut_weather_set = form.weather_sets[wthr_set_key]
             lat = 'lat'
             lon = 'lon'
         elif weather_resource == 'NCAR_CCSM4':
@@ -181,6 +181,7 @@ class ClimGenNC(object,):
         # ===================
         self.hist_precip_fname = hist_weather_set['ds_precip']
         self.hist_tas_fname = hist_weather_set['ds_tas']
+        self.longitudes_hist = hist_weather_set['longitudes']
         self.latitudes_hist = hist_weather_set['latitudes']
 
         # New stanza to facilitate option when user selects "use average weather"
@@ -190,12 +191,7 @@ class ClimGenNC(object,):
         else:
             self.met_ave_file = 'met' + str(hist_start_year) + '_' + str(hist_end_year) + 'a.txt'
 
-        # replaces:
-        # num_years_str = '{:0=3d}'.format(num_hist_years)
-        # self.met_ave_file = 'met' + num_years_str + 'a.txt'
-
-        # only the years for which we have historic data will be taken into account
-        self.num_ave_wthr_years = num_hist_years
+        self.num_ave_wthr_years = num_hist_years    # only years where there is historic data will be taken into account
 
         self.sim_start_year = sim_start_year
         self.sim_end_year   = sim_end_year
@@ -207,7 +203,7 @@ class ClimGenNC(object,):
         return the weather indices for the area which encloses the supplied bounding box
         this function does not alter the ClimGenNC (self) object
         """
-        junk = seterr(all='ignore') # switch off warning messages
+        # junk = seterr(all='ignore') # switch off warning messages
 
         bbLonMin, bbLatMin, bbLonMax, bbLatMax =  bbox
         if snglPntFlag:
