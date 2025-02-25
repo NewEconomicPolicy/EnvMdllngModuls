@@ -49,24 +49,26 @@ def associate_climate(site_rec, climgen, pettmp_hist, pettmp_fut):
     # TODO: find a more elegant methodology
     # =====================================
     for lookup_key in pettmp_hist['precipitation']:
-        if pettmp_fut['precipitation'][lookup_key] == None or pettmp_fut['temperature'][lookup_key] == None or \
-                    pettmp_hist['precipitation'][lookup_key] == None or pettmp_fut['temperature'][lookup_key] == None:
-            continue
-        else:
-            slat, slon = lookup_key.split('_')
-            gran_lat = int(slat)
-            gran_lon = int(slon)
 
-            # situation where grid cell is coincidental with weather cell
-            # ===========================================================
-            if gran_lat == gran_lat_cell and gran_lon == gran_lon_cell:
-                climgen.lgr.info('Cell with lookup key ' + lookup_key + ' is coincidental with weather cell')
-                pettmp_out = {}
-                for metric in pettmp_fut.keys():
-                    pettmp_out[metric] = list([pettmp_hist[metric][lookup_key], pettmp_fut[metric][lookup_key]])
-                return pettmp_out
+        if lookup_key in pettmp_fut['precipitation']:
+            if pettmp_fut['precipitation'][lookup_key] == None or pettmp_fut['temperature'][lookup_key] == None or \
+                        pettmp_hist['precipitation'][lookup_key] == None or pettmp_fut['temperature'][lookup_key] == None:
+                continue
             else:
-                proximate_keys[lookup_key] = list([gran_lat, gran_lon])
+                slat, slon = lookup_key.split('_')
+                gran_lat = int(slat)
+                gran_lon = int(slon)
+
+                # situation where grid cell is coincidental with weather cell
+                # ===========================================================
+                if gran_lat == gran_lat_cell and gran_lon == gran_lon_cell:
+                    climgen.lgr.info('Cell with lookup key ' + lookup_key + ' is coincidental with weather cell')
+                    pettmp_out = {}
+                    for metric in pettmp_fut.keys():
+                        pettmp_out[metric] = list([pettmp_hist[metric][lookup_key], pettmp_fut[metric][lookup_key]])
+                    return pettmp_out
+                else:
+                    proximate_keys[lookup_key] = list([gran_lat, gran_lon])
 
     # return empty dict if no proximate keys (unlikely)
     # =================================================
