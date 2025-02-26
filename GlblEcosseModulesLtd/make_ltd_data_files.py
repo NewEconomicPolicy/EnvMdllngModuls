@@ -298,7 +298,7 @@ class MakeLtdDataFiles(object):
         # Future land use and plant inputs
         # ================================
         # NB "(if plant input set to zero it is obtained from RothC instead)" has been omitted to reduce size of file
-        num_years = self.end_year - self.start_year  + 1
+        num_years = min(len(self.landUses), self.end_year - self.start_year  + 1)   # TODO: should not be necessary
         for year_num in range(num_years):
             lu = self.landUses[year_num]
             plnt_inpt = round(self.plantInput[year_num], 3)

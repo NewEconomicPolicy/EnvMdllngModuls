@@ -58,7 +58,12 @@ def _weather_for_simulation(amma_2050_allowed_gcms, weather_sets, climgen, pettm
         hist_start_year = weather_sets['EObs_Mnth']['year_start']
         hist_end_year = weather_sets['EObs_Mnth']['year_end']
         fut_start_year = weather_sets['EObs_Mnth']['year_start']
+    elif wthr_rsrc == 'EFISCEN-ISIMIP':
+        hist_start_year = weather_sets['CRU_hist']['year_start']
+        hist_end_year   = weather_sets['CRU_hist']['year_end']
+        fut_start_year  = weather_sets[wthr_rsrc + '_ssp126']['year_start']
     else:
+        # CRU is default
         hist_start_year = weather_sets['CRU_hist']['year_start']
         hist_end_year = weather_sets['CRU_hist']['year_end']
         fut_start_year = weather_sets['ClimGen_A1B']['year_start']
@@ -111,6 +116,7 @@ def _make_met_files(clim_dir, latitude, climgen, pettmp_grid_cell):
     end_year   = climgen.sim_end_year
     precip = pettmp_grid_cell['precipitation']         #
     temper = pettmp_grid_cell['temperature']
+    nmnths = len(temper)
 
     indx1 = 0
     for year in range(start_year, end_year + 1):
@@ -118,6 +124,8 @@ def _make_met_files(clim_dir, latitude, climgen, pettmp_grid_cell):
         met_path = join(clim_dir, fname)
 
         indx2 = indx1 + 12
+        if indx2 >= nmnths:
+            break
 
         # precipitation and temperature
         precipitation = precip[indx1:indx2]            #
