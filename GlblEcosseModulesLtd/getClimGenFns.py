@@ -1,33 +1,44 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        getClimGenFns.py
 # Purpose:     additional functions for getClimGenNC.py
 # Author:      s03mm5
 # Created:     08/02/2018
 # Copyright:   (c) s03mm5 2015
 # Licence:     <your licence>
-#-------------------------------------------------------------------------------
-#!/usr/bin/env python
+# -------------------------------------------------------------------------------
+#
 
 __prog__ = 'getClimGenFns.py'
 __author__ = 's03mm5'
 
 import time
 import sys
-from glob import glob
-import netCDF4 as cdf
-import numpy as np
-import math
+from calendar import monthrange
 
-set_spacer_len = 12
-ngranularity = 120
-delta_deg = 0.001 # ensures creation of enclosing climate grid
+GRANULARITY = 120
+
+# ==========================
+
+def fetch_days_per_month(start_year, nmonths):
+    """
+    C
+    """
+    days_per_month = []
+    for year in range(start_year, start_year + int(nmonths / 12) + 1):
+        for imnth in range(12):
+            dummy, ndays = monthrange(year, imnth + 1)
+            days_per_month.append(ndays)
+
+    return days_per_month
 
 def _write_coords_for_key(mess, climgen, proximate_keys, lookup_key, func_name):
-
+    """
+     C
+    """
     # should go in log file - TODO
     gran_lat, gran_lon = proximate_keys[lookup_key]
-    latitude  = 90 - gran_lat/ngranularity
-    longitude = gran_lon/ngranularity - 180
+    latitude  = 90 - gran_lat/GRANULARITY
+    longitude = gran_lon/GRANULARITY - 180
     mess += ' Lat: {}\tGran lat: {}\tLon: {}\tGran lon: {}\tin {}'.format(latitude, gran_lat, longitude, gran_lon,
                                                                                                         func_name)
     climgen.lgr.info(mess)
