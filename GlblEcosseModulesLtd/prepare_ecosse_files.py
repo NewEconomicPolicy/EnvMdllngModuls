@@ -124,7 +124,7 @@ def _make_met_files(clim_dir, latitude, climgen, pettmp_grid_cell):
         met_path = join(clim_dir, fname)
 
         indx2 = indx1 + 12
-        if indx2 >= nmnths:
+        if indx2 > nmnths:
             break
 
         # precipitation and temperature
@@ -236,8 +236,10 @@ def make_ecosse_file(form, climgen, ltd_data, site_rec, province, pettmp_grid_ce
     else:
         study = form.w_study.text()
     gran_coord = '{0:0=5g}_{1:0=5g}'.format(gran_lat, gran_lon)
-    met_rel_path = '..\\' + gran_coord + '\\'
-    clim_dir = normpath(join(sims_dir, study, gran_coord))
+
+    met_rel_path = join('..', '..', '..', 'Wthr', climgen.fut_clim_scen, gran_coord, '')
+
+    clim_dir = normpath(join(climgen.wthr_out_dir, gran_coord))
     simulation_weather = _weather_for_simulation(form.amma_2050_allowed_gcms, form.weather_sets, climgen,
                                                                                             pettmp_hist, pettmp_fut)
     _make_met_files(clim_dir, latitude, climgen, simulation_weather)
