@@ -568,7 +568,6 @@ def build_and_display_studies(form):
 
     return config_files
 
-
 def check_sims_dir(form):
     """
     called from _initiation func.
