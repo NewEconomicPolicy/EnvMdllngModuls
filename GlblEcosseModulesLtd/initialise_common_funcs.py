@@ -14,7 +14,7 @@ __version__ = '0.0.0'
 # Version history
 # ---------------
 #
-from os.path import exists, normpath, split, splitext, isfile, isdir, join, lexists
+from os.path import exists, normpath, split, splitext, isfile, isdir, join, lexists, expanduser
 from os import getcwd, remove, makedirs, mkdir, name as os_name
 from json import load as json_load, dump as json_dump
 from time import sleep
@@ -87,7 +87,9 @@ def initiation(form, variation=''):
     if form.zeros_file:
         output_fnames.append('zero_muglobal_cells_v2b.csv')
     for file_name in output_fnames:
-        long_fname = join(form.log_dir, file_name)
+        # long_fname = join(form.log_dir, file_name)
+        home_dir = expanduser("~")
+        long_fname = join(home_dir, file_name)
         key = file_name.split('_')[0]
         if exists(long_fname):
             try:
