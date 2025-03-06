@@ -34,10 +34,10 @@ def read_isimip_wthr_dsets_detail(weather_dir , gnrc_rsrce):
     # check CRU historic
     # ==================
     cru_flag = False
-    cru_dir = weather_dir + '/CRU_Data'
+    cru_dir = join(weather_dir, 'CRU_Data', 'Monthly')
     if isdir(cru_dir):
         wthr_rsrce = 'CRU_hist'
-        cru_fnames = sorted(glob(cru_dir + '/cru*dat.nc'))
+        cru_fnames = sorted(glob(cru_dir + '\\cru*dat.nc'))
         if len(cru_fnames) > 0:
             weather_sets[wthr_rsrce] = fetch_weather_nc_parms(cru_fnames[0], wthr_rsrce, 'Monthly', 'historic')
             weather_sets[wthr_rsrce]['base_dir']   = cru_dir
