@@ -300,7 +300,7 @@ def _get_thornthwaite(temp_mean, latitude, year):
     # print('{} {} {} {}'.format(year, ntime_steps, len(pet_daily),func_name))
     return pet_daily
 
-def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
+def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell, start_year=None):
     """
     feed annual temperatures to Thornthwaite equations to estimate Potential Evapotranspiration [mm/month]
     """
@@ -312,7 +312,8 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
 
     precip = pettmp_fut_grid_cell['precip']
     temp   = pettmp_fut_grid_cell['tas']
-    start_year = climgen.sim_start_year
+    if start_year is None:
+        start_year = climgen.sim_start_year
     end_year = climgen.sim_end_year
     met_fnames = []
 
@@ -326,7 +327,6 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell):
             dummy, short_name = split(met_file)
             met_fnames.append(short_name)
         return met_fnames
-
 
     if pettmp_fut_grid_cell is None:
         return
