@@ -18,8 +18,9 @@ from netCDF4 import Dataset, num2date
 from glob import glob
 from copy import copy
 from pandas import read_csv
-from thornthwaite import thornthwaite
+from PyQt5.QtWidgets import QApplication
 
+from thornthwaite import thornthwaite
 from wthr_dsets_funcs import read_isimip_wthr_dsets_detail, fetch_weather_nc_parms
 
 CHESS_LOOKUP = 'GBR_hwsd_lkup_tble.csv'
@@ -358,18 +359,23 @@ def write_csv_wthr_file(lgr, country, gcm_name, scenario, latitude, longitude,
     """
     write to file, simulation weather for the given time period
     """
-    func_name =  __prog__ + ' _write_csv_wthr_file'
+    func_name = __prog__ + ' _write_csv_wthr_file'
+
+    if out_dir is None:
+        print(WARN_STR + 'Output directory must not be None')
+        QApplication.processEvents()
+        return
 
     metric_list = list(['Precipitation', 'Temperature','Potentional Evapotranspiration'])
 
     # file comprising rain and temperature
     # ====================================
-    short_fname =  country + '_' + gcm_name + '_' + scenario + '.txt'
+    short_fname = country + '_' + gcm_name + '_' + scenario + '.txt'
     metrics_fname = join(out_dir, short_fname)
     try:
         fhand_out = open(metrics_fname, 'w')
-    except PermissionError as e:
-        print(str(e))
+    except PermissionError as err:
+        print(str(err))
         return
 
     # stanza for Potentional Evapotranspiration [mm/month]
