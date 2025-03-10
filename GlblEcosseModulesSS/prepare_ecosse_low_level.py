@@ -283,7 +283,7 @@ def _get_thornthwaite(temp_mean, latitude, year):
         indx2 = indx1 + ndays
         accum_temp = 0.0
         for temp in temp_mean[indx1:indx2]:
-            accum_temp +=temp
+            accum_temp += temp
         monthly_t.append(accum_temp/ndays)
         indx1 = indx2
 
@@ -311,7 +311,7 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell, start_year
         return
 
     precip = pettmp_fut_grid_cell['precip']
-    temp   = pettmp_fut_grid_cell['tas']
+    temp = pettmp_fut_grid_cell['tas']
     if start_year is None:
         start_year = climgen.sim_start_year
     end_year = climgen.sim_end_year
@@ -319,7 +319,6 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell, start_year
 
     # check if met files already exist
     # ================================
-
     nyears = end_year - start_year + 1
     met_files = glob(clim_dir + '\\met*s.txt')
     if len(met_files) == nyears:
@@ -337,7 +336,7 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell, start_year
     for year in range(start_year, end_year + 1):
         fname = 'met{}s.txt'.format(year)
         met_fnames.append(fname)
-        met_path =join(clim_dir, fname)
+        met_path = join(clim_dir, fname)
 
         if climgen.sim_mnthly_flag:
             ntime_incrs = 12
@@ -351,7 +350,7 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell, start_year
 
         # precipitation and temperature
         precipitation = precip[indx1:indx2]
-        temp_mean     = temp[indx1:indx2]
+        temp_mean = temp[indx1:indx2]
 
         # pet
         # ===
@@ -362,8 +361,8 @@ def make_met_files(clim_dir, latitude, climgen, pettmp_fut_grid_cell, start_year
 
         # TODO: do something about occasional runtime warning...
         pot_evapotrans = [round(p, 2) for p in pet]
-        precip_out     = [round(p, 2) for p in precipitation]
-        tmean_out      = [round(t, 2) for t in temp_mean]
+        precip_out = [round(p, 2) for p in precipitation]
+        tmean_out = [round(t, 2) for t in temp_mean]
 
         # write file
         # ==========
@@ -384,7 +383,6 @@ def fetch_long_term_ave_wthr_recs(climgen, pettmp_hist):
     """
     generate long term average weather records
     """
-    func_name = __prog__ + ' fetch_long_term_ave_wthr_recs'
 
     # calculate historic average weather
     # ==================================
@@ -394,18 +392,18 @@ def fetch_long_term_ave_wthr_recs(climgen, pettmp_hist):
     indx_start = 12*(hist_start_year - dset_start_year)
 
     hist_end_year = climgen.hist_end_year
-    indx_end   = 12*(hist_end_year - dset_start_year + 1) # end year includes all 12 months - TODO: check
+    indx_end = 12*(hist_end_year - dset_start_year + 1) # end year includes all 12 months - TODO: check
 
     # use dict-comprehension to initialise precip. and temperature dictionaries
     # =========================================================================
     hist_precip = {mnth: 0.0 for mnth in climgen.months}
-    hist_tmean  = {mnth: 0.0 for mnth in climgen.months}
+    hist_tmean = {mnth: 0.0 for mnth in climgen.months}
 
     for indx in range(indx_start, indx_end, 12):
 
         for imnth, month in enumerate(climgen.months):
             hist_precip[month] += pettmp_hist['precip'][indx + imnth]
-            hist_tmean[month]  += pettmp_hist['tas'][indx + imnth]
+            hist_tmean[month] += pettmp_hist['tas'][indx + imnth]
 
     # write stanza for input.txt file consisting of long term average climate
     # =======================================================================
