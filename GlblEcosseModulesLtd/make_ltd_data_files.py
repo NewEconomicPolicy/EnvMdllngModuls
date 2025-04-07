@@ -98,7 +98,10 @@ class MakeLtdDataFiles(object):
             self.plant_inputs[lut] = 0
         self.latitude = no_data
         self.wt_at_start = no_data
-        if form.ecosse_exe is None or form.ecosse_exe == 'ecossev6_2c' or form.ecosse_exe == 'ecossev6_2b':
+
+        ecosse_exe = form.ecosse_exe
+        if (ecosse_exe is None or ecosse_exe == 'ecossev6_2c' or ecosse_exe == 'ecossev6_2b'
+                                                                    or ecosse_exe == 'elum_ecosse'):
             self.wt_max_stand = no_data
         else:
             self.wt_max_stand = 0
