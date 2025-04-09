@@ -368,7 +368,7 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
 
     # copy to sims area
     # =================
-    if glbl_ecss_variation is None:
+    if glbl_ecss_variation is None or glbl_ecss_variation == 'NetZeroPlus':
         study_defn_file = join(sims_dir, study + '_study_definition.txt')
         with open(study_defn_file, 'w') as fstudy:
             json_dump(study_defn, fstudy, indent=2, sort_keys=True)
