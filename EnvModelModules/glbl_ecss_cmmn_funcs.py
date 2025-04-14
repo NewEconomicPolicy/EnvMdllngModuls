@@ -25,6 +25,8 @@ from pandas import read_excel
 from time import sleep
 from glob import glob
 
+from cvrtcoord import OSGB36toWGS84
+
 NOTEPAD_EXE_PATH = 'C:\\Windows\\System32\\notepad.exe'
 NGRANULARITY = 120
 
@@ -249,8 +251,6 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
 
     # prepare the bounding box
     # ========================
-    # if glbl_ecss_variation == 'jm2'
-
     if glbl_ecss_variation is None:
         try:
             ll_lon = float(form.w_ll_lon.text())
@@ -263,11 +263,17 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
             ur_lon = 0.0
             ur_lat = 0.0
     else:
-        ll_lon = 0.0
-        ll_lat = 0.0
-        ur_lon = 0.0
-        ur_lat = 0.0
+        # for projects using OSGB e.g. NetZeroPlus
+        # ========================================
+        ur_bngx = form.hwsd_drvr_data['BNG_X'].max()
+        ur_bngy = form.hwsd_drvr_data['BNG_Y'].max()
+        ur_lon, ur_lat = OSGB36toWGS84(ur_bngx, ur_bngy)
 
+        ll_bngx = form.hwsd_drvr_data['BNG_X'].min()
+        ll_bngy = form.hwsd_drvr_data['BNG_Y'].min()
+        ll_lon, ll_lat = OSGB36toWGS84(ll_bngx, ll_bngy)
+
+    # =================
     bbox =  list([ll_lon,ll_lat,ur_lon,ur_lat])
     study = form.w_study.text()
     if study == '':
