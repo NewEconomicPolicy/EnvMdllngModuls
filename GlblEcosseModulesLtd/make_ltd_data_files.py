@@ -20,8 +20,13 @@ MaxNumFutureYears = 150
 ERROR_STR = '*** Error *** '
 
 class SoilLyr(object, ):
-
+    """
+    C
+    """
     def __init__(self, c, bulk_dens, ph, clay_pc, silt_pc, sand_pc, no_data=NoData):
+        """
+        C
+        """
         self.bulk_dens = bulk_dens
         self.ph = ph
         self.c = c     # C content
@@ -33,6 +38,9 @@ class SoilLyr(object, ):
         return
 
     def validate(self):
+        """
+        C
+        """
         if self.c != self.no_data: validate.total_soil_carbon([self.c], depth='1 m')
         if self.bulk_dens != self.no_data: validate.bulk_density([self.bulk_dens])
         if self.ph != self.no_data: validate.soil_ph([self.ph])
@@ -170,25 +178,35 @@ class MakeLtdDataFiles(object):
 
 # ========================= end of init =================================================
 
-    def add_lyr(self, lut_name, c_content, bulk_density, ph, clay_pc,
-                silt_pc, sand_pc):
+    def add_lyr(self, lut_name, c_content, bulk_density, ph, clay_pc, silt_pc, sand_pc):
+        """
+        C
+        """
         self.soil_lyrs[lut_name.lower()].append(SoilLyr(c_content, bulk_density, ph,
                                         clay_pc, silt_pc, sand_pc, self.no_data))
         return
 
     def del_lyrs(self):
+        """
+        C
+        """
         for lut in self._luts:
             self.soil_lyrs[lut] = []
 
         return
 
     def line(self, data, comment):
+        """
+        C
+        """
         spacer_len = max(self.spacer_len - len(data), 2)
         spacer = ' ' * spacer_len
         return '{0}{1}# {2}\n'.format(data, spacer, comment)
 
     def validate(self):
-        # Misc
+        """
+        C
+        """
         assert(0 < self.equil_mode < 10)
         validate.latitude([self.latitude])
         assert(0 <= self.wt_at_start <= 300)
@@ -255,9 +273,8 @@ class MakeLtdDataFiles(object):
 
         # Soil parameters
         # ===============
-        output_buff = []
-        output_buff.append(self.line('{0}'.format(self.equil_mode), 'Mode of equilibrium run'))
-        output_buff.append(self.line('{0}'.format(num_lyrs), 'Number of soil layers (max 10)'))
+        output_buff = [self.line('{0}'.format(self.equil_mode), 'Mode of equilibrium run'),
+                       self.line('{0}'.format(num_lyrs), 'Number of soil layers (max 10)')]
         for lyr_num, lyr_depth in enumerate(lyr_depths):
             output_buff.append(self.line('{0}'.format(lyr_depth), 'Depth of bottom of SOM layer {0} [cm]'.format(lyr_num+1)))
 
