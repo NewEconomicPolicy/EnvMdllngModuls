@@ -225,10 +225,11 @@ def _read_setup_file(form, fname_setup, variation=''):
                         config = json_load(fconfig)
 
                     try:
-                        fn = split(config['Simulations']['exepath'])[1]
+                        exepath = config['Simulations']['exepath']
+                        fn = split(exepath)[1]
                     except KeyError as err:
                         print(
-                            WARN_STR + 'could not identify Ecosse version in run sites config file: '
+                            WARN_STR + 'could not identify Ecosse exe in run sites config file: '
                             + runsites_config_file + '\n')
                     else:
                         ecosse_exe = splitext(fn)[0].lower()
@@ -247,6 +248,7 @@ def _read_setup_file(form, fname_setup, variation=''):
     if ecosse_run_flag:
         print('\nRun ECOSSE settings:')
         print('\tRun sites config file: ' + runsites_config_file)
+        print('\tECOSSE exe file:       ' + exepath)
         print('\tRun sites script file: ' + runsites_py)
         print('\tPython interpreter:    ' + python_exe)
         print('')
