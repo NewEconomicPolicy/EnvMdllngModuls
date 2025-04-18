@@ -729,7 +729,7 @@ class ClimGenNC(object,):
         be included in the input.txt file
         also create a climate file for each of the simulation years based on average weather from the CRU year range
         """
-        func_name =  ' create_FutureAverages'
+        func_name =  ' create_lta_recs'
         full_func_name =  __prog__ +  func_name
 
         sim_start_year = self.sim_start_year

@@ -245,7 +245,7 @@ def make_ecosse_file(form, climgen, ltd_data, site_rec, province, pettmp_grid_ce
     _make_met_files(clim_dir, latitude, climgen, simulation_weather)
 
     # create additional weather related files from already existing met files
-    irc = climgen.create_FutureAverages(clim_dir, latitude, gran_lat, longitude, gran_lon)
+    irc = climgen.create_lta_recs(clim_dir, latitude, gran_lat, longitude, gran_lon)
 
     # TODO: improve
     write_csv_wthr_file(form.lgr, study, wthr_rsrc, fut_clim_scen, latitude, longitude,
