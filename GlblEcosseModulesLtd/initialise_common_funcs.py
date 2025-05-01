@@ -321,7 +321,7 @@ def _read_setup_file(form, fname_setup, variation=''):
     # check weather data
     # ==================
     if form.version == 'HWSD_grid':
-        if variation == '_spvc' or variation == '_consol':
+        if variation == '_spvc' or variation == '_consol':  #
             rqurd_wthr_rsrcs = ['EFISCEN-ISIMIP']
         else:
             rqurd_wthr_rsrcs = ['CRU', 'CHESS']
