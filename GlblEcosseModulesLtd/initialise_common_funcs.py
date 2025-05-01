@@ -321,7 +321,7 @@ def _read_setup_file(form, fname_setup, variation=''):
     # check weather data
     # ==================
     if form.version == 'HWSD_grid':
-        if variation == '_spvc':
+        if variation == '_spvc' or variation == '_consol':
             rqurd_wthr_rsrcs = ['EFISCEN-ISIMIP']
         else:
             rqurd_wthr_rsrcs = ['CRU', 'CHESS']
@@ -582,9 +582,13 @@ def check_sims_dir(form):
 
     # make sure directory has write permissions and it exists
     if not lexists(sims_dir):
-        mkdir(sims_dir)
-        form.sims_dir = sims_dir
-        retFlag = True
+        try:
+            mkdir(sims_dir)
+        except FileNotFoundError as err:
+            print(ERROR_STR + 'checking simulations directory\n\t' + str(err))
+        else:
+            form.sims_dir = sims_dir
+            retFlag = True
     else:
         if isdir(sims_dir):
             form.lgr.info('Directory {0} already exists'.format(sims_dir))
