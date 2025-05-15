@@ -314,6 +314,8 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
     # TODO: replace "luCsvFname": "" with 'luPiJsonFname': form.fertiliser_fname
     if hasattr(form, 'combo12'):
         crop_name = form.combo12.currentText()
+    elif hasattr(form, 'w_combo12'):
+        crop_name = form.w_combo12.currentText()
     else:
         crop_name = 'Unknown'
 
@@ -337,12 +339,18 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
     if hasattr(form, 'combo09s'):
         lta_strt_yr = form.combo09s.currentText()
         lta_end_yr = form.combo09e.currentText()
+    elif hasattr(form, 'w_combo09s'):
+        lta_strt_yr = form.w_combo09s.currentText()
+        lta_end_yr = form.w_combo09e.currentText()
     else:
         lta_strt_yr, lta_end_yr = (1988, 2018)
 
     if hasattr(form, 'combo011s'):
         sim_strt_yr = form.combo11s.currentText()
         sim_end_yr = form.combo11e.currentText()
+    elif hasattr(form, 'w_combo11s'):
+        sim_strt_yr = form.w_combo11s.currentText()
+        sim_end_yr = form.w_combo11e.currentText()
     else:
         sim_strt_yr, sim_end_yr = (2020, 2079)
 
