@@ -23,10 +23,10 @@ sleepTime = 5
 max_lines = 10
 
 def associate_plant_inputs(lggr_info, strt_year, gran_lat, gran_lon, pi_df, ltd_data, write_to_lggr = False):
-    '''
+    """
     pi_df is plant input data frame comprising monthly PI values therefore need to sum for each year
     then modify ltd_data object with plant inputs
-    '''
+    """
     pi_ann = {}
     locat = pi_df.loc[(pi_df['gran_lat'] == gran_lat) & (pi_df['gran_lon'] == gran_lon)]
     if len(locat.values) == 0:
@@ -58,11 +58,11 @@ def associate_plant_inputs(lggr_info, strt_year, gran_lat, gran_lon, pi_df, ltd_
     return
 
 def cnvrt_joe_plant_inputs_to_df(fname):
-    '''
+    """
     plant inputs are for 21 years - 252 values
     start year is 2020
     monthly values - convert to annual, construct data frame
-    '''
+    """
 
     print('Reading plant inputs file: ' + fname)
 

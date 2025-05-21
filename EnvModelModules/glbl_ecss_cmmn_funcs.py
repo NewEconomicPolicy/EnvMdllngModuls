@@ -314,8 +314,8 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
     # TODO: replace "luCsvFname": "" with 'luPiJsonFname': form.fertiliser_fname
     if hasattr(form, 'combo12'):
         crop_name = form.combo12.currentText()
-    elif hasattr(form, 'w_combo12'):
-        crop_name = form.w_combo12.currentText()
+    elif hasattr(form, 'w_combo00b'):
+        crop_name = form.w_combo00b.currentText()
     else:
         crop_name = 'Unknown'
 
