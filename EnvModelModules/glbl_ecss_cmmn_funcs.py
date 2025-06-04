@@ -251,7 +251,7 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
 
     # prepare the bounding box
     # ========================
-    if glbl_ecss_variation is None:
+    if hasattr(form, 'w_ll_lon'):
         try:
             ll_lon = float(form.w_ll_lon.text())
             ll_lat = float(form.w_ll_lat.text())
