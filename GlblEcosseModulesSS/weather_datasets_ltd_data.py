@@ -77,6 +77,10 @@ def change_weather_resource(form, wthr_rsrce = None):
     for wthr_set in weather_set_linkage[1:]:
         scenarios.append(form.wthr_sets[wthr_set]['scenario'])
 
+    # creates a dictionary where each list item becomes a key and keys can't repeat, which removes duplicates
+    # Then turn it back into a list, it also keeps the original order.
+    scenarios = list(dict.fromkeys(scenarios))
+
     form.w_combo10.clear()
     for scenario in scenarios:
         form.w_combo10.addItem(str(scenario))
@@ -101,7 +105,7 @@ def change_weather_resource(form, wthr_rsrce = None):
         wthr_settings_prev = form.wthr_settings_prev[wthr_rsrce]
         form.w_combo09s.setCurrentIndex(wthr_settings_prev['hist_strt_year'])
         form.w_combo09e.setCurrentIndex(wthr_settings_prev['hist_end_year'])
-        form.w_combo10.setCurrentIndex(wthr_settings_prev['scenario'])
+        form.w_combo10.setCurrentText(wthr_settings_prev['scenario'])
         form.w_combo11s.setCurrentIndex(wthr_settings_prev['fut_strt_year'])
         form.w_combo11e.setCurrentIndex(wthr_settings_prev['fut_end_year'])
 
@@ -367,7 +371,7 @@ def read_weather_dsets_detail(form):
         # ====================================
         gcms = listdir(wrldclim_root_dir)
         if form.settings['last_gcm_only_flag']:
-            del(gcms[:-1])
+            del(gcms[1:-1])
 
         for gcm in gcms:
             print('')
