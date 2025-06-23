@@ -1,6 +1,6 @@
 """
 #-------------------------------------------------------------------------------
-# Name:        glbl_ecss_cmmn_funcs.py
+# Name:        glbl_ecss_cmmn_cmpntsGUI.py
 # Purpose:     module comprising miscellaneous functions common to some Global Ecosse variations
 # Author:      Mike Martin
 # Created:     31/07/2020
@@ -8,7 +8,7 @@
 #-------------------------------------------------------------------------------
 """
 
-__prog__ = 'glbl_ecss_cmmn_funcs.py'
+__prog__ = 'glbl_ecss_cmmn_cmpntsGUI.py'
 __version__ = '0.0.0'
 
 # Version history
@@ -34,6 +34,64 @@ RESOLUTIONS = {120:'30"', 30:'2\'', 20:'3\'', 10:'6\'', 8:'7\' 30"', 6:'10\'', 4
 REVERSE_RESOLS = {}
 for key in RESOLUTIONS:
     REVERSE_RESOLS[RESOLUTIONS[key]] = key
+
+def glblecss_bounding_box(form, grid, irow):
+    """
+
+    """
+    irow += 1
+    icol = 0
+    # UR lon/lat
+    # ==========
+    irow += 1
+    lbl02a = QLabel('Upper right longitude:')
+    lbl02a.setAlignment(Qt.AlignRight)
+    grid.addWidget(lbl02a, irow, 0)
+
+    w_ur_lon = QLineEdit()
+    grid.addWidget(w_ur_lon, irow, 1)
+    form.w_ur_lon = w_ur_lon
+
+    lbl02b = QLabel('latitude:')
+    lbl02b.setAlignment(Qt.AlignRight)
+    grid.addWidget(lbl02b, irow, 2)
+
+    w_ur_lat = QLineEdit()
+    w_ur_lat.setFixedWidth(80)
+    grid.addWidget(w_ur_lat, irow, 3)
+    form.w_ur_lat = w_ur_lat
+
+    # LL lon/lat
+    # ==========
+    irow += 1
+    lbl01a = QLabel('Lower left longitude:')
+    lbl01a.setAlignment(Qt.AlignRight)
+    grid.addWidget(lbl01a, irow, 0)
+
+    w_ll_lon = QLineEdit()
+    grid.addWidget(w_ll_lon, irow, 1)
+    form.w_ll_lon = w_ll_lon
+
+    lbl01b = QLabel('latitude:')
+    lbl01b.setAlignment(Qt.AlignRight)
+    grid.addWidget(lbl01b, irow, 2)
+
+    w_ll_lat = QLineEdit()
+    grid.addWidget(w_ll_lat, irow, 3)
+    w_ll_lat.setFixedWidth(80)
+    form.w_ll_lat = w_ll_lat
+
+    # bbox
+    # ====
+    irow += 1
+    lbl03a = QLabel('AOI bounding box:')
+    lbl03a.setAlignment(Qt.AlignRight)
+    grid.addWidget(lbl03a, irow, 0)
+
+    form.w_bbox = QLabel()
+    grid.addWidget(form.w_bbox, irow, 1, 1, 5)
+
+    return irow
 
 def glblecss_limit_sims(form, grid, irow):
     """
