@@ -43,7 +43,7 @@ def initiation(form, variation=''):
     """
     if form.version == 'HWSD_grid':
         glbl_ecsse_str = 'global_ecosse_config_hwsd_'
-        fname_setup = 'global_ecosse_setup_ver2' + variation + '.json'
+        fname_setup = 'global_ecosse_setup' + variation + '.json'
     else:
         glbl_ecsse_str = 'global_ecosse_config_sngl_'
         fname_setup = 'global_ecosse_setup_ver2_sngl.json'
@@ -391,6 +391,9 @@ def write_default_setup_file(setup_file):
             'hwsd_dir': data_path + 'HWSD_NEW',
             'images_dir': outputs_path + 'images',
             'log_dir': root_dir_user + 'logs',
+            'mask_fn': data_path + 'Hilda_land_use\\hildap_vGLOB-1.0-f',
+            'python_exe': 'E:\\Python38\\python.exe',
+            'runsites_py': 'G:\\AbUnivGit\\RunEcssApp\\SpecGui\\spec_run.py',
             'shp_dir': data_path + 'CountryShapefiles',
             'sims_dir': outputs_path + 'EcosseSims',
             'weather_dir': data_path

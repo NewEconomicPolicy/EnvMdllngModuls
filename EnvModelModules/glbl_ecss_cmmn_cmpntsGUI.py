@@ -49,6 +49,7 @@ def glblecss_bounding_box(form, grid, irow):
     grid.addWidget(lbl02a, irow, 0)
 
     w_ur_lon = QLineEdit()
+    w_ur_lon.setFixedWidth(WDGT_SIZE_80)
     grid.addWidget(w_ur_lon, irow, 1)
     form.w_ur_lon = w_ur_lon
 
@@ -57,7 +58,7 @@ def glblecss_bounding_box(form, grid, irow):
     grid.addWidget(lbl02b, irow, 2)
 
     w_ur_lat = QLineEdit()
-    w_ur_lat.setFixedWidth(80)
+    w_ur_lat.setFixedWidth(WDGT_SIZE_80)
     grid.addWidget(w_ur_lat, irow, 3)
     form.w_ur_lat = w_ur_lat
 
@@ -69,6 +70,7 @@ def glblecss_bounding_box(form, grid, irow):
     grid.addWidget(lbl01a, irow, 0)
 
     w_ll_lon = QLineEdit()
+    w_ll_lon.setFixedWidth(WDGT_SIZE_80)
     grid.addWidget(w_ll_lon, irow, 1)
     form.w_ll_lon = w_ll_lon
 
@@ -78,7 +80,7 @@ def glblecss_bounding_box(form, grid, irow):
 
     w_ll_lat = QLineEdit()
     grid.addWidget(w_ll_lat, irow, 3)
-    w_ll_lat.setFixedWidth(80)
+    w_ll_lat.setFixedWidth(WDGT_SIZE_80)
     form.w_ll_lat = w_ll_lat
 
     # bbox
