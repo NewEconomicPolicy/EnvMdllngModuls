@@ -14,7 +14,7 @@ __version__ = '0.0.0'
 # Version history
 # ---------------
 #
-from os.path import exists, normpath, split, splitext, isfile, isdir, join, lexists, expanduser
+from os.path import exists, normpath, split, splitext, isfile, isdir, join, expanduser
 from os import getcwd, remove, makedirs, mkdir, name as os_name
 from json import load as json_load, dump as json_dump
 from time import sleep
@@ -68,9 +68,9 @@ def initiation(form, variation=''):
         form.default_model_switches = default_model_switches
         print('\tmodel switches file: ' + default_model_switches + '\n')
     else:
-        print('{0} file does not exist in directory {1}'.format(fname_model_switches, cwDir))
+        print('{} file does not exist in directory {}'.format(fname_model_switches, cwDir))
         sleep(sleepTime)
-        sys.exit(0)
+        form.default_model_switches = None
 
     # set up logging
     # ==============
@@ -286,17 +286,17 @@ def _read_setup_file(form, fname_setup, variation=''):
 
     # make sure directories exist for configuration and log files
     # ===========================================================
-    if not lexists(log_dir):
+    if not isdir(log_dir):
         makedirs(log_dir)
     form.log_dir = log_dir
 
-    if not lexists(config_dir):
+    if not isdir(config_dir):
         makedirs(config_dir)
     form.config_dir = config_dir
 
     # HWSD is crucial
     # ===============
-    if lexists(hwsd_dir):
+    if isdir(hwsd_dir):
         check_hwsd_integrity(settings[grp]['hwsd_dir'])
         form.hwsd_dir = hwsd_dir
     else:
@@ -306,7 +306,7 @@ def _read_setup_file(form, fname_setup, variation=''):
 
     # weather is crucial
     # ===================
-    if lexists(weather_dir):
+    if isdir(weather_dir):
         form.weather_dir = weather_dir
         form.settings['weather_dir'] = weather_dir
     else:
@@ -584,7 +584,7 @@ def check_sims_dir(form):
     form.sims_dir = ''  # default in case of failure
 
     # make sure directory has write permissions and it exists
-    if not lexists(sims_dir):
+    if not isdir(sims_dir):
         try:
             mkdir(sims_dir)
         except FileNotFoundError as err:

@@ -202,7 +202,7 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
     # ===============================
     gnrc_rsrce = 'EObs'
     if gnrc_rsrce in rqrd_rsces:
-        eobs_mnthly_dir  = weather_dir + '\\EObs_v23\\Monthly'
+        eobs_mnthly_dir = weather_dir + '\\EObs_v23\\Monthly'
         if isdir(eobs_mnthly_dir):
             wthr_rsrce = 'EObs_Mnth'
             eobs_fnames = glob(eobs_mnthly_dir + '/[rr-tg]*Monthly.nc')
@@ -212,9 +212,9 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
                 if  wthr_nc_parms is None:
                     print('Problem reading EObs monthly datasets in ' + eobs_mnthly_dir)
                 else:
-                    weather_sets[wthr_rsrce]['base_dir']   = eobs_mnthly_dir
-                    weather_sets[wthr_rsrce]['ds_precip']  = eobs_fnames[0]
-                    weather_sets[wthr_rsrce]['ds_tas']     = eobs_fnames[1]
+                    weather_sets[wthr_rsrce]['base_dir'] = eobs_mnthly_dir
+                    weather_sets[wthr_rsrce]['ds_precip'] = eobs_fnames[0]
+                    weather_sets[wthr_rsrce]['ds_tas'] = eobs_fnames[1]
                     wthr_rsrces_generic.append(gnrc_rsrce)
                     weather_set_linkages[gnrc_rsrce] = list([wthr_rsrce, wthr_rsrce])
             else:
@@ -230,9 +230,9 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
             harmonie_fnames = glob(harmonie_dir + '/cruhar*.nc')
             if len(harmonie_fnames) > 0:
                 weather_sets[wthr_rsrce] = fetch_weather_nc_parms(harmonie_fnames[0], wthr_rsrce, 'Monthly', 'historic')
-                weather_sets[wthr_rsrce]['base_dir']   = harmonie_dir
-                weather_sets[wthr_rsrce]['ds_precip']  = harmonie_fnames[0]
-                weather_sets[wthr_rsrce]['ds_tas']     = harmonie_fnames[1]
+                weather_sets[wthr_rsrce]['base_dir'] = harmonie_dir
+                weather_sets[wthr_rsrce]['ds_precip'] = harmonie_fnames[0]
+                weather_sets[wthr_rsrce]['ds_tas'] = harmonie_fnames[1]
                 wthr_rsrces_generic.append(gnrc_rsrce)
                 weather_set_linkages[gnrc_rsrce] = list([wthr_rsrce, wthr_rsrce])
             else:
@@ -242,15 +242,15 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
     # ==================
     gnrc_rsrce = 'NCAR_CCSM4'
     if gnrc_rsrce in rqrd_rsces:
-        ncar_mnthly_dir  = weather_dir + '\\NCAR_CCSM4\\Monthly'
+        ncar_mnthly_dir = weather_dir + '\\NCAR_CCSM4\\Monthly'
         if isdir(ncar_mnthly_dir):
             wthr_rsrce = 'NCAR_CCSM4'
             ncar_fnames = glob(ncar_mnthly_dir + '\\rcp26\\*_Amon*.nc')
             if len(ncar_fnames) > 0:
                 weather_sets[wthr_rsrce] = fetch_weather_nc_parms(ncar_fnames[0], wthr_rsrce, 'Monthly', 'historic')
-                weather_sets[wthr_rsrce]['base_dir']   = ncar_mnthly_dir
-                weather_sets[wthr_rsrce]['ds_precip']  = ncar_fnames[0]
-                weather_sets[wthr_rsrce]['ds_tas']     = ncar_fnames[1]
+                weather_sets[wthr_rsrce]['base_dir'] = ncar_mnthly_dir
+                weather_sets[wthr_rsrce]['ds_precip'] = ncar_fnames[0]
+                weather_sets[wthr_rsrce]['ds_tas'] = ncar_fnames[1]
                 wthr_rsrces_generic.append(gnrc_rsrce)
                 weather_set_linkages[gnrc_rsrce] = list([wthr_rsrce, wthr_rsrce])
             else:
@@ -262,15 +262,15 @@ def read_weather_dsets_detail(form, rqrd_rsces=EXSTNG_WTHR_RSRCS):
     if gnrc_rsrce in rqrd_rsces:
         cru_flag = False
         valid_wthr_dset_rsrces = []
-        cru_dir  = weather_dir + '/CRU_Data'
+        cru_dir = join(weather_dir,'CRU_Data')
         if isdir(cru_dir):
             wthr_rsrce = 'CRU_hist'
-            cru_fnames = sorted(glob(cru_dir + '/cru*dat.nc'))
+            cru_fnames = sorted(glob(join(cru_dir, 'Monthly') + '\\cru*dat.nc'))
             if len(cru_fnames) > 0:
                 weather_sets[wthr_rsrce] = fetch_weather_nc_parms(cru_fnames[0], wthr_rsrce, 'Monthly', 'historic')
-                weather_sets[wthr_rsrce]['base_dir']   = cru_dir
-                weather_sets[wthr_rsrce]['ds_precip']  = cru_fnames[0]
-                weather_sets[wthr_rsrce]['ds_tas']     = cru_fnames[1]
+                weather_sets[wthr_rsrce]['base_dir'] = cru_dir
+                weather_sets[wthr_rsrce]['ds_precip'] = cru_fnames[0]
+                weather_sets[wthr_rsrce]['ds_tas'] = cru_fnames[1]
                 valid_wthr_dset_rsrces.append(wthr_rsrce)
                 cru_flag = True
             else:
