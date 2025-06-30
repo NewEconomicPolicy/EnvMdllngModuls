@@ -43,7 +43,7 @@ def initiation(form, variation=''):
     """
     if form.version == 'HWSD_grid':
         glbl_ecsse_str = 'global_ecosse_config_hwsd_'
-        fname_setup = 'global_ecosse_setup' + variation + '.json'
+        fname_setup = 'global_ecosse_setup_ver2' + variation + '.json'
     else:
         glbl_ecsse_str = 'global_ecosse_config_sngl_'
         fname_setup = 'global_ecosse_setup_ver2_sngl.json'

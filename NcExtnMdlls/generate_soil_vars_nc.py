@@ -21,8 +21,8 @@ from netCDF4 import Dataset
 from PyQt5.QtWidgets import QApplication
 
 from netcdf_funcs import create_soil_nc_dset, get_nc_coords
+from glbl_ecsse_high_level_sp import simplify_soil_recs, _simplify_aoi
 
-from soil_related_funcs import simplify_soil_recs, simplify_aoi
 import hwsd_bil
 
 from hwsd_mu_globals_fns import gen_grid_cells_for_band
@@ -62,7 +62,7 @@ def _write_to_soil_nc(form, nc_dset, max_lon_indx, max_lat_indx, num_band):
     hwsd.bad_muglobals = form.hwsd_mu_globals.bad_mu_globals
     aoi_res, bbox = gen_grid_cells_for_band(hwsd, form.req_resol_upscale)
     if form.w_use_high_cover.isChecked():
-        aoi_res =  simplify_aoi(aoi_res)
+        aoi_res = _simplify_aoi(aoi_res)
 
     lon_ll_aoi, lat_ll_aoi, lon_ur_aoi, lat_ur_aoi = bbox
     num_meta_cells = len(aoi_res)
