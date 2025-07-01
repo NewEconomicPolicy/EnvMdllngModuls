@@ -522,7 +522,6 @@ def check_lu_pi_json_fname(form):
 
     return mess
 
-
 def write_runsites_config_file(form):
     """
     read the runsites config file and edit one line

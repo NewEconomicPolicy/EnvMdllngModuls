@@ -116,7 +116,7 @@ def build_and_display_studies(form, glbl_ecsse_str):
     """
     is called at start up and when user creates a new project
     """
-    func_name =  __prog__ + ' build_and_display_studies'
+    func_name =  __prog__ + ' build_and_display_projects'
 
     if hasattr(form, 'sttngs'):
         config_dir = form.sttngs['config_dir']
