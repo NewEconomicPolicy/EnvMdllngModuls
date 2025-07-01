@@ -14,8 +14,10 @@ __version__ = '0.0.0'
 # Version history
 # ---------------
 #
+from os.path import normpath, join
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLabel, QComboBox, QLineEdit, QPushButton
+from PyQt5.QtWidgets import (QApplication, QLabel, QComboBox, QLineEdit, QPushButton, QMessageBox)
+from pandas import DataFrame
 
 from shape_funcs import calculate_area, format_bbox
 
@@ -37,7 +39,7 @@ for key in RESOLUTIONS:
 
 def glblecss_bounding_box(form, grid, irow):
     """
-
+    C
     """
     irow += 1
     icol = 0
@@ -97,7 +99,7 @@ def glblecss_bounding_box(form, grid, irow):
 
 def glblecss_limit_sims(form, grid, irow):
     """
-
+    C
     """
     irow += 1
     icol = 0
@@ -136,7 +138,7 @@ def glblecss_limit_sims(form, grid, irow):
 
 def grid_resolutions(form, grid, irow):
     """
-
+    C
     """
     irow += 1
     lbl16 = QLabel('Grid resolution:')
@@ -165,7 +167,7 @@ def grid_resolutions(form, grid, irow):
 
 def calculate_grid_cell(form, granularity = GRANULARITY):
     """
-
+    C
     """
 
     # use current lower left latitude for reference

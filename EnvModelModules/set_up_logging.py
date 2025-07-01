@@ -49,8 +49,6 @@ def set_up_logging(form, appl_name, lggr_flag = False):
     # =====================================
     date_stamp = strftime('_%Y_%m_%d_%I_%M_%S')
     log_file_name = appl_name + date_stamp + '.log'
-
-
     log_fname = join(log_dir, log_file_name)
 
     # Setup up initial logger to handle logging prior to setting up the full logger using config options
