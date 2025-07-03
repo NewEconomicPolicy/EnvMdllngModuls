@@ -555,28 +555,8 @@ def change_weather_resource(form, weather_resource=None):
     for scenario in scenarios:
         form.combo10.addItem(str(scenario))
 
-    form.combo09s.clear()
-    for year in hist_syears:
-        form.combo09s.addItem(str(year))
-
-    form.combo09e.clear()
-    for year in hist_eyears:
-        form.combo09e.addItem(str(year))
-
-    form.combo11s.clear()
-    for year in fut_syears:
-        form.combo11s.addItem(str(year))
-
-    form.combo11e.clear()
-    for year in fut_eyears:
-        form.combo11e.addItem(str(year))
-
     if weather_resource in form.wthr_settings_prev:
         wthr_settings_prev = form.wthr_settings_prev[weather_resource]
-        form.combo09s.setCurrentText(wthr_settings_prev['hist_strt_year'])
-        form.combo09e.setCurrentText(wthr_settings_prev['hist_end_year'])
         form.combo10.setCurrentText(wthr_settings_prev['scenario'])
-        form.combo11s.setCurrentText(wthr_settings_prev['fut_strt_year'])
-        form.combo11e.setCurrentText(wthr_settings_prev['fut_end_year'])
 
     return
