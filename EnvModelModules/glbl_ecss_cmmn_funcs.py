@@ -14,7 +14,7 @@ __version__ = '0.0.0'
 # Version history
 # ---------------
 #
-from os import remove, mkdir
+from os import remove, mkdir, makedirs
 from os.path import isdir, join, normpath, splitext, exists, lexists, isfile, split
 
 from json import dump as json_dump, load as json_load
@@ -335,6 +335,12 @@ def write_study_definition_file(form, glbl_ecss_variation = None):
         sims_dir = form.settings['sims_dir']
     else:
         sims_dir = form.sims_dir
+
+    # anticipate potential error when writing study definition file
+    # =============================================================
+    if not isdir(sims_dir):
+        makedirs(sims_dir)
+        print('\nCreated sims_dir: ' + sims_dir)
 
     if hasattr(form, 'combo09s'):
         lta_strt_yr = form.combo09s.currentText()
