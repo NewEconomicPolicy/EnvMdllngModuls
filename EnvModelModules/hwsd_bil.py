@@ -94,7 +94,7 @@ def validate_hwsd_rec (lgr, mu_global, data_rec):
     for val in ts_rec:
         if isnan(val):
             # TODO: mess = 'Incomplete topsoil data - mu_global: ' + str(mu_global) + '\trecord: ' + ', '.join(data_rec)
-            mess =  'Incomplete topsoil data - mu_global: ' + str(mu_global)
+            mess = 'Incomplete topsoil data - mu_global: ' + str(mu_global)
             lgr.info(mess)
             return None
     '''
