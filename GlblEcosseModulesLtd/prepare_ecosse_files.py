@@ -15,7 +15,7 @@ __prog__ = 'prepare_ecosse_files.py'
 # Version history
 # ---------------
 #
-from os.path import exists, normpath, join, lexists, basename
+from os.path import exists, normpath, join, lexists, basename, split
 from os import remove, makedirs
 import csv
 import time
@@ -239,13 +239,14 @@ def make_ecosse_file(form, climgen, ltd_data, site_rec, province, pettmp_grid_ce
 
     met_rel_path = join('..', '..', '..', 'Wthr', climgen.fut_clim_scen, gran_coord, '')
 
-    clim_dir = normpath(join(climgen.wthr_out_dir, gran_coord))
+    # clim_dir = normpath(join(climgen.wthr_out_dir, gran_coord))
+    clim_dir = join(split(sims_dir)[0], 'Wthr', gran_coord)
     simulation_weather = _weather_for_simulation(form.amma_2050_allowed_gcms, form.weather_sets, climgen,
                                                                                             pettmp_hist, pettmp_fut)
     _make_met_files(clim_dir, latitude, climgen, simulation_weather)
 
     # create additional weather related files from already existing met files
-    irc = climgen.create_lta_recs(clim_dir, latitude, gran_lat, longitude, gran_lon)
+    # irc = climgen.create_lta_recs(clim_dir, latitude, gran_lat, longitude, gran_lon)
 
     # TODO: improve
     write_csv_wthr_file(form.lgr, study, wthr_rsrc, fut_clim_scen, latitude, longitude,
