@@ -198,7 +198,7 @@ class ClimGenNC(object,):
         self.num_fut_years = sim_end_year - sim_start_year + 1
         self.fut_ave_file = 'met{}_to_{}_ave.txt'.format(sim_start_year, sim_end_year)
 
-    def genLocalGrid(self, bbox, hwsd, snglPntFlag = False):
+    def genLocalGrid(self, bbox, hwsd, snglPntFlag = False, num_band = None):
         """
         return the weather indices for the area which encloses the supplied bounding box
         this function does not alter the ClimGenNC (self) object

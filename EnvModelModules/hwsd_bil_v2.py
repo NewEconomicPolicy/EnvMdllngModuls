@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# Name:        hwsd_bil_v1.py
+# Name:        hwsd_bil_v2.py
 # Purpose:     Class to read HWSD .hdr and .bil files and return a 2D array comprising MU_GLOBAL values for a given
 #              bounding box
 #               input files are: hwsd.hdr and hwsd.bil
@@ -12,16 +12,16 @@
 #                   c) modified on 03-09-2016 to include soils which have only a top layer
 #
 # Author:      Mike Martin
-# Created:     16/09/2015
+# Created:     16/09/2025
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 
-__prog__ = 'hwsd_bil_v1.py'
+__prog__ = 'hwsd_bil_v2.py'
 __version__ = '0.0.0'
 
 #
 from csv import reader, DictReader
-from os.path import join, exists
+from os.path import join, exists, isdir,isfile
 from sys import exit, stdout
 from struct import unpack
 from locale import LC_ALL, setlocale, format_string
@@ -29,7 +29,43 @@ from numpy import arange, dtype, zeros, int32
 from time import sleep
 import math
 
+ERROR_STR = '*** Error *** '
+
+VAR_FLOAT_LIST = ['ulxmap', 'ulymap', 'xdim', 'ydim']
+VAR_STR_LIST = ['pixeltype', 'byteorder', 'layout']
+
 sleepTime = 5
+
+def check_hwsd_integrity(hwsd_dir):
+    """
+    invoked at startup - check essential directory and files
+    """
+    integrity_flag = True
+
+    if not isdir(hwsd_dir):
+        print(ERROR_STR + 'HWSD directory ' + hwsd_dir + ' must exist')
+        integrity_flag = False
+
+    # check main table and header file
+    # =================================
+    inp_fname = 'HWSD2.accdb'
+    mdb_file = join(hwsd_dir, 'mdb', inp_fname)
+    if not isfile(mdb_file):
+        print(ERROR_STR + 'HWSD database file HWSD table ' + mdb_file + ' must exist')
+        integrity_flag = False
+
+    inp_fname = 'HWSD2.hdr'
+    hdr_file = join(hwsd_dir, 'raster', inp_fname)
+    if not isfile(hdr_file):
+        print(ERROR_STR + 'HWSD header file ' + hdr_file + ' must exist')
+        integrity_flag = False
+
+    if integrity_flag:
+        print('HWSD version 2 in ' + hwsd_dir + ' has passed integrity check')
+        return
+    else:
+        sleep(sleepTime)
+        exit(0)
 
 def validate_hwsd_rec (lgr, mu_global, data_rec):
     """
@@ -113,9 +149,6 @@ class HWSD_bil(object,):
         with open(inp_file, 'r') as finp:
             lines = finp.readlines()
         lines = [line.rstrip('\n') for line in lines]
-
-        VAR_FLOAT_LIST = ['ulxmap', 'ulymap', 'xdim', 'ydim']
-        VAR_STR_LIST = ['pixeltype', 'byteorder', 'layout']
 
         hdr_dict = {}
         for line in lines:
@@ -234,7 +267,7 @@ class HWSD_bil(object,):
 
         return nvals_read
 
-    def get_soil_recs(self,keys):
+    def get_soil_recs(self, keys):
         """
         # get soil records associated with each MU_GLOBAL list entry
         # assumption: the keys passed are already sorted,
@@ -245,7 +278,7 @@ class HWSD_bil(object,):
         inpfname = 'HWSD_DATA.csv'
         csv_file = join(self.hwsd_dir, inpfname)
         if not exists(csv_file):
-            stdout.write('Error in  get_soil_recs file does not exist: ' + csv_file + ' cannot proceed \n')
+            stdout.write(ERROR_STR + 'get_soil_recs file does not exist: ' + csv_file + ' cannot proceed \n')
             return -1
 
         # build a dictionary with mu_globals as keys
