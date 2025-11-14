@@ -28,6 +28,7 @@ from locale import LC_ALL, setlocale, format_string
 from numpy import arange, dtype, zeros, int32
 from time import sleep
 import math
+from pyodbc import connect, drivers
 
 ERROR_STR = '*** Error *** '
 
@@ -35,6 +36,49 @@ VAR_FLOAT_LIST = ['ulxmap', 'ulymap', 'xdim', 'ydim']
 VAR_STR_LIST = ['pixeltype', 'byteorder', 'layout']
 
 sleepTime = 5
+
+def fetch_accesss_cursor(hwsd_dir):
+    """
+    C
+    """
+    ms_drvr = 'Microsoft Access Driver(*.mdb, *.accdb)'
+    access_db_fn = join(hwsd_dir, 'mdb', 'HWSD2.mdb')
+
+    ms_srch_str = 'Microsoft Access Driver'
+    drvr_nms = [drvr_nm for drvr_nm in drivers() if drvr_nm.startswith(ms_srch_str)]
+    if len(drvr_nms) == 0:
+        print(ERROR_STR + 'could not find ' + ms_srch_str + ' among ODBC drivers')
+        return
+
+    ms_drvr = drvr_nms[0]
+
+    conn = connect(Driver=ms_drvr, DBQ=access_db_fn)
+    return conn.cursor()
+
+def get_soil_recs(cursor, mu_globals):
+    """
+
+    """
+    for table_info in cursor.tables(tableType='TABLE'):
+        print(table_info.table_name)
+
+    # retcode = cursor.execute('select * from D_ROOTS')
+
+    for row in cursor.columns(table='HWSD2_LAYERS'):
+        print(row.column_name)
+
+    for mu_global in mu_globals.keys():
+        break
+
+    VARS = ' SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER '
+    cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
+    retcode = cursor.execute(cmd)
+
+    recs = [rec for rec in cursor.fetchall()]
+
+    cursor.close()
+
+    return recs
 
 def check_hwsd_integrity(hwsd_dir):
     """
@@ -266,105 +310,6 @@ class HWSD_bil(object,):
         print('Found mu_globals for ' + nretrieve_str + ' cells')
 
         return nvals_read
-
-    def get_soil_recs(self, keys):
-        """
-        # get soil records associated with each MU_GLOBAL list entry
-        # assumption: the keys passed are already sorted,
-        # also and crucially: that in the .csv file, the mu_globals are ordered from lowest value to highest
-        """
-        func_name =  __prog__ + ' get_soil_recs'
-
-        inpfname = 'HWSD_DATA.csv'
-        csv_file = join(self.hwsd_dir, inpfname)
-        if not exists(csv_file):
-            stdout.write(ERROR_STR + 'get_soil_recs file does not exist: ' + csv_file + ' cannot proceed \n')
-            return -1
-
-        # build a dictionary with mu_globals as keys
-        soil_recs = {}
-
-        kiters = iter(keys)
-        key = next(kiters)
-        if key == 0:
-            key = next(kiters)
-        else:
-            # initialise dictionary entry - TODO: is this necessary?
-            soil_recs[key] = []
-
-        # initialisations
-        mu_glob_prev = -999
-
-        data_recs = []
-
-        with open(csv_file) as csvf:
-            csvreader = DictReader(csvf)
-
-            self.lgr.info('csv file of mu_global data: {0}\t dialect: {1}\t\tnum fields: {2}'
-                  .format(csv_file,csvreader.dialect,len(csvreader.fieldnames)))
-
-            # step through rows in CSV file until we pick up all data
-            # soil_data_recs = []
-
-            for row in csvreader:
-                # output required columns - see hwsd_uk.txt in mksims.py
-                # mu_global,share1,t_sand1,t_silt1,t_clay1,t_bulk1,t_oc1,t_ph1,s_sand1,s_silt1,s_clay1,s_bulk1,s_oc1,s_ph1
-                # all floats - then fill with nans...
-                mu_global = int(row['MU_GLOBAL'])
-
-                # if mu_global changes then record accumulated soil data
-                if mu_global != mu_glob_prev:
-
-                    # if soil data has been accumulated then record it
-                    if len(data_recs) > 0:
-                        soil_recs[mu_glob_prev] = data_recs
-                        data_recs = []
-
-                    #
-                    mu_glob_prev = mu_global
-
-                if mu_global > key:
-                    try:
-                        key = next(kiters)
-                    except StopIteration:
-                        # once list of keys (mu_globals) is exhausted then close csv file and break out
-                        csvf.close()
-                        break
-
-                if mu_global == key:
-                    data_rec = list([row['SHARE'],row['T_SAND'],row['T_SILT'],row['T_CLAY'],
-                                   row['T_BULK_DENSITY'],row['T_OC'],row['T_PH_H2O'],
-                                   row['S_SAND'],row['S_SILT'],row['S_CLAY'],
-                                   row['S_BULK_DENSITY'],row['S_OC'],row['S_PH_H2O']])
-                    adjusted_datarec = validate_hwsd_rec(self.lgr, mu_global, data_rec)
-                    if adjusted_datarec != False:
-                        data_recs.append(adjusted_datarec)
-                    self.lgr.handlers[0].flush()
-                    # os.fsync(self.lgr.handlers[0].fileno())
-
-        # End of main loop - make doubly sure that the CSV file is closed
-        if not csvf.closed:
-            self.lgr.info('Warning: csv file of mu_global data: {} closed'.format(csv_file))
-            csvf.close()
-
-        # if soil data has been accumulated then record it
-        if len(data_recs) > 0:
-             soil_recs[mu_glob_prev] = data_recs
-
-        self.lgr.info('Exiting function {0} after generating {1} records from soil table {2}\n'
-                                        .format(func_name, len(soil_recs), csv_file))
-
-        # compare keys and create a list of mu_globals which are missing data in the HWSD
-        # TODO: is this good enough?
-        bad_muglobals = []
-        for key in keys:
-            if soil_recs.get(key) == None:
-                bad_muglobals.append(key)
-            elif len(soil_recs[key]) == 0:
-                bad_muglobals.append(key)
-        self.bad_muglobals = bad_muglobals
-
-        return soil_recs
 
     def read_bbox_mu_globals(self, bbox, snglPntFlag = False):
 
