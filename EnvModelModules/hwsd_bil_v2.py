@@ -48,7 +48,7 @@ def check_hwsd_integrity(hwsd_dir):
 
     # check main table and header file
     # =================================
-    inp_fname = 'HWSD2.accdb'
+    inp_fname = 'HWSD2.mdb'
     mdb_file = join(hwsd_dir, 'mdb', inp_fname)
     if not isfile(mdb_file):
         print(ERROR_STR + 'HWSD database file HWSD table ' + mdb_file + ' must exist')
