@@ -29,6 +29,7 @@ from numpy import arange, dtype, zeros, int32
 from time import sleep
 import math
 from pyodbc import connect, drivers
+from tabulate import tabulate
 
 ERROR_STR = '*** Error *** '
 
@@ -57,28 +58,62 @@ def fetch_accesss_cursor(hwsd_dir):
 
 def get_soil_recs(cursor, mu_globals):
     """
-
-    """
-    for table_info in cursor.tables(tableType='TABLE'):
-        print(table_info.table_name)
-
     # retcode = cursor.execute('select * from D_ROOTS')
+    """
+    table_names = [table_info.table_name for table_info in cursor.tables(tableType='TABLE')]
+    layer_column_names = [row.column_name for row in cursor.columns(table='HWSD2_LAYERS')]
+    mu_globals = [mu_global for mu_global in mu_globals.keys()]
+    mu_global = mu_globals[0]
 
-    for row in cursor.columns(table='HWSD2_LAYERS'):
-        print(row.column_name)
+    # fetch Coverage, Dominant Soil Units for WRB and FAO
+    # ===================================================
+    VARS = ' COVERAGE, WRB2, FAO90 '
+    cmd = 'select ' + VARS + ' from HWSD2_SMU where HWSD2_SMU_ID = ' + str(mu_global)
+    cursor.execute(cmd)
 
-    for mu_global in mu_globals.keys():
-        break
+    smu_recs = [rec for rec in cursor.fetchall()]
+    code, wrb2, fao90 = smu_recs[0]
+
+    cmd = 'select VALUE from D_COVERAGE where CODE = ' + str(code)
+    cursor.execute(cmd)
+    recs = [rec for rec in cursor.fetchall()]
+    coverage = recs[0][0]
+
+    cmd = 'select VALUE from D_WRB2 where CODE = ' + wrb2
+    cmd = 'select VALUE from D_WRB2'
+    cursor.execute(cmd)
+
+    recs = [rec for rec in cursor.fetchall()]
+    wrb2_value = recs[0][0]
+
+    cmd = 'select VALUE from D_FAO90 where CODE = ' + fao90
+    cursor.execute(cmd)
+    recs = [rec for rec in cursor.fetchall()]
+    fao90_value = recs[0][0]
+
+    # make first four lines
+    # =====================
+    a = [
+        ['Coverage:', coverage],
+        ['Soil Mapping Unit (SMU):', mu_global],
+        ['Dominant Soil Unit (WRB 2022):', wrb2_value + '(' + wrb2 + ')'],
+        ['Dominant Soil Unit (FAO 1990):', fao90_value + '(' + fao90 + ')']
+    ]
+    # create header
+    headers = ['Name', 'City']
+
+    print(tabulate(a, headers=headers, tablefmt='grid'))
+
 
     VARS = ' SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER '
     cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
     retcode = cursor.execute(cmd)
 
-    recs = [rec for rec in cursor.fetchall()]
+    layer_recs = [rec for rec in cursor.fetchall()]
 
     cursor.close()
 
-    return recs
+    return layer_recs
 
 def check_hwsd_integrity(hwsd_dir):
     """
@@ -187,7 +222,7 @@ class HWSD_bil(object,):
 
     def __init__(self, lgr, hwsd_dir):
         """
-        open header file and read first 9 lines
+        open header file and read content consisting 14 lines
         """
         inp_file = join(hwsd_dir, 'raster', 'HWSD2.hdr')
         with open(inp_file, 'r') as finp:
@@ -312,15 +347,15 @@ class HWSD_bil(object,):
         return nvals_read
 
     def read_bbox_mu_globals(self, bbox, snglPntFlag = False):
+        """
+        this function creates a grid of MU_GLOBAL values corresponding to a given
+        bounding box defined by two lat/lon pairs
 
-        # this function creates a grid of MU_GLOBAL values corresponding to a given
-        # bounding box defined by two lat/lon pairs
-
+        the HWSD grid covers the globe's land area with 30 arc-sec grid-cells
+        AOI is typically county sized e.g. Isle of Man
+        """
         func_name =  __prog__ + ' read_bbox_mu_globals'
         self.lgr.info('Running programme ' + func_name)
-
-        # the HWSD grid covers the globe's land area with 30 arc-sec grid-cells
-        # AOI is typically county sized e.g. Isle of Man
 
         granularity = self.granularity
         ncols = self.ncols
