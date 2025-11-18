@@ -56,6 +56,24 @@ def fetch_accesss_cursor(hwsd_dir):
     conn = connect(Driver=ms_drvr, DBQ=access_db_fn)
     return conn.cursor()
 
+def _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fao90):
+    """
+    make first four lines
+    """
+
+    a = [
+        ['Coverage:', coverage],
+        ['Soil Mapping Unit (SMU):', mu_global],
+        ['Dominant Soil Unit (WRB 2022):', wrb2_value + '(' + wrb2 + ')'],
+        ['Dominant Soil Unit (FAO 1990):', fao90_value + '(' + fao90 + ')']
+    ]
+    # create header
+    headers = ['Name', 'City']
+
+    print(tabulate(a, headers=headers, tablefmt='grid'))
+
+    return
+
 def get_soil_recs(cursor, mu_globals):
     """
     # retcode = cursor.execute('select * from D_ROOTS')
@@ -79,31 +97,19 @@ def get_soil_recs(cursor, mu_globals):
     recs = [rec for rec in cursor.fetchall()]
     coverage = recs[0][0]
 
-    cmd = 'select VALUE from D_WRB2 where CODE = ' + wrb2
-    cmd = 'select VALUE from D_WRB2'
+    cmd = "select VALUE from D_WRB2 where CODE = '" + wrb2 + "'"
+    # cmd = 'select VALUE from D_WRB2'
     cursor.execute(cmd)
 
     recs = [rec for rec in cursor.fetchall()]
     wrb2_value = recs[0][0]
 
-    cmd = 'select VALUE from D_FAO90 where CODE = ' + fao90
+    cmd = "select VALUE from D_FAO90 where CODE = '" + fao90 + "'"
     cursor.execute(cmd)
     recs = [rec for rec in cursor.fetchall()]
     fao90_value = recs[0][0]
 
-    # make first four lines
-    # =====================
-    a = [
-        ['Coverage:', coverage],
-        ['Soil Mapping Unit (SMU):', mu_global],
-        ['Dominant Soil Unit (WRB 2022):', wrb2_value + '(' + wrb2 + ')'],
-        ['Dominant Soil Unit (FAO 1990):', fao90_value + '(' + fao90 + ')']
-    ]
-    # create header
-    headers = ['Name', 'City']
-
-    print(tabulate(a, headers=headers, tablefmt='grid'))
-
+    _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fao90)
 
     VARS = ' SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER '
     cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
@@ -272,80 +278,6 @@ class HWSD_bil(object,):
         '''
         self.soil_recs = {}
 
-    def read_bbox_hwsd_mu_globals(self, bbox, hwsd_mu_globals, upscale_resol):
-
-        # this function creates a grid of MU_GLOBAL values corresponding to a given
-        # bounding box defined by two lat/lon pairs
-
-        func_name =  __prog__ + '.read_bbox_hwsd_mu_globals'
-        self.lgr.info('Running programme ' + func_name)
-        setlocale(LC_ALL, '')
-
-        # the HWSD grid covers the globe's land area with 30 arc-sec grid-cells
-        # AOI is typically county sized e.g. Isle of Man
-        granularity = self.granularity
-
-        # these are lat/lon
-        upper_left_coord = [bbox[3],bbox[0]]
-        lower_right_coord = [bbox[1],bbox[2]]
-        self.upper_left_coord = upper_left_coord
-        self.lower_right_coord = lower_right_coord
-
-        # round these so that they are divisable by the requested resolution
-        nlats = round((upper_left_coord[0] - lower_right_coord[0])*granularity)
-        nlats = upscale_resol*math.ceil(nlats/upscale_resol)
-        nlons = round((lower_right_coord[1] - upper_left_coord[1])*granularity)
-        nlons = upscale_resol*math.ceil(nlons/upscale_resol)
-
-        # construct 2D array
-        rows = zeros(nlats*nlons, dtype = int32)
-        rows.shape = (nlats,nlons)
-        #
-        # work out first and last rows
-        nrow1 = round((90.0 - upper_left_coord[0])*granularity)
-        nrow2 = nrow1 + nlats
-        ncol1 = round((180.0 + upper_left_coord[1])*granularity)
-        ncol2 = ncol1 + nlons
-
-        # read a chunk the CSV file
-        # =========================
-        aoi_chunk = hwsd_mu_globals.data_frame.loc[hwsd_mu_globals.data_frame['gran_lat'].isin(range(nrow1, nrow2))]
-        nvals_read = len(aoi_chunk)
-        nrejects = 0
-        for index, rec in aoi_chunk.iterrows():
-            icol = int(rec[1])
-            irow = int(rec[0])
-            mu_global = int(rec[2])
-
-            # make sure indices are kept within limits
-            # ========================================
-            col_indx = icol - ncol1
-            if col_indx < 0 or col_indx >= nlons:
-                nrejects += 1
-            else:
-                rows[irow-nrow1][icol-ncol1] = mu_global
-
-        nvals_read_str = format_string('%d', nvals_read, grouping=True)
-        nrejects_str = format_string('%d', nrejects, grouping=True)
-        mess = 'Read ' + nvals_read_str + ' cells from hwsd mu globals data frame, rejected ' + nrejects_str
-        self.lgr.info(mess)
-
-        self.nrow1 = nrow1
-        self.nrow2 = nrow2
-        self.ncol1 = ncol1
-        self.ncol2 = ncol2
-
-        self.rows = rows
-        self.nlats = nlats
-        self.nlons = nlons
-
-        mess =  'Retrieved {} mu globals for AOI of {} lats and {} lons'.format(nvals_read, nlats, nlons)
-        self.lgr.info(mess)
-        nretrieve_str = format_string('%d', nvals_read - nrejects, grouping=True)
-        print('Found mu_globals for ' + nretrieve_str + ' cells')
-
-        return nvals_read
-
     def read_bbox_mu_globals(self, bbox, snglPntFlag = False):
         """
         this function creates a grid of MU_GLOBAL values corresponding to a given
@@ -486,29 +418,3 @@ class HWSD_bil(object,):
                     print('Only one mu_global with value of zero - nothing to process')
 
         return mu_globals
-
-    def get_data_mapit(self):
-
-        # function to return lists which can be plotted using mapit
-        xcoords = []  # e.g. longitude or easting
-        ycoords = []  # e.g. latitude or northing
-        vals = []
-        nrow1 = self.nrow1
-        nrow2 = self.nrow2
-        nlats = self.nlats
-
-        ncol1 = self.ncol1
-        ncol2 = self.ncol2
-        nlons = self.nlons
-
-        yc = self.nrow1
-        for irow in range(0,nlats):
-            xc = self.ncol1
-            for icol in range(0,nlons):
-                xcoords.append(xc)
-                ycoords.append(yc)
-                vals.append(self.rows[irow,icol])
-                xc += 1
-            yc += 1
-
-        return xcoords, ycoords, vals
