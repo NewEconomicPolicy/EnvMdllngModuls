@@ -19,7 +19,6 @@
 __prog__ = 'hwsd_bil_v2.py'
 __version__ = '0.0.0'
 
-#
 from csv import reader, DictReader
 from os.path import join, exists, isdir,isfile
 from sys import exit, stdout
@@ -37,6 +36,25 @@ VAR_FLOAT_LIST = ['ulxmap', 'ulymap', 'xdim', 'ydim']
 VAR_STR_LIST = ['pixeltype', 'byteorder', 'layout']
 
 sleepTime = 5
+
+def fetch_metadata(cursor):
+    """
+    C
+    """
+    cmd = 'select * from HWSD2_LAYERS_METADATA'
+    try:
+        cursor.execute(cmd)
+    except BaseException as err:
+        print(str(err))
+        return
+
+    recs_lyrs = [rec for rec in cursor.fetchall()]
+
+    cmd = 'select * from HWSD2_SMU_METADATA'
+    cursor.execute(cmd)
+    recs_smu = [rec for rec in cursor.fetchall()]
+
+    return
 
 def fetch_accesss_cursor(hwsd_dir):
     """
@@ -98,7 +116,6 @@ def get_soil_recs(cursor, mu_globals):
     coverage = recs[0][0]
 
     cmd = "select VALUE from D_WRB2 where CODE = '" + wrb2 + "'"
-    # cmd = 'select VALUE from D_WRB2'
     cursor.execute(cmd)
 
     recs = [rec for rec in cursor.fetchall()]
@@ -116,8 +133,6 @@ def get_soil_recs(cursor, mu_globals):
     retcode = cursor.execute(cmd)
 
     layer_recs = [rec for rec in cursor.fetchall()]
-
-    cursor.close()
 
     return layer_recs
 
@@ -361,9 +376,9 @@ class HWSD_bil(object,):
         return nrows_read
 
     def mu_global_list(self):
-
-        # build a list of mu_globals from grid
-
+        """
+        build a list of mu_globals from grid
+        """
         # reshape
         mu_globals = []
         nlats = self.nlats
