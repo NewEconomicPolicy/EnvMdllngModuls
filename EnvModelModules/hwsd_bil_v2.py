@@ -19,14 +19,13 @@
 __prog__ = 'hwsd_bil_v2.py'
 __version__ = '0.0.0'
 
-from csv import reader, DictReader
 from os.path import join, exists, isdir,isfile
+from pandas import read_sql
 from sys import exit, stdout
 from struct import unpack
 from locale import LC_ALL, setlocale, format_string
 from numpy import arange, dtype, zeros, int32
 from time import sleep
-import math
 from pyodbc import connect, drivers
 from tabulate import tabulate
 
@@ -43,6 +42,7 @@ def fetch_metadata(cursor):
     """
     cmd = 'select * from HWSD2_LAYERS_METADATA'
     try:
+        # df = read_sql(cmd, conn)
         cursor.execute(cmd)
     except BaseException as err:
         print(str(err))
@@ -54,9 +54,9 @@ def fetch_metadata(cursor):
     cursor.execute(cmd)
     recs_smu = [rec for rec in cursor.fetchall()]
 
-    return
+    return recs_lyrs, recs_smu
 
-def fetch_accesss_cursor(hwsd_dir):
+def fetch_accesss_conn(hwsd_dir):
     """
     C
     """
@@ -72,7 +72,7 @@ def fetch_accesss_cursor(hwsd_dir):
     ms_drvr = drvr_nms[0]
 
     conn = connect(Driver=ms_drvr, DBQ=access_db_fn)
-    return conn.cursor()
+    return conn, conn.cursor()
 
 def _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fao90):
     """
@@ -130,8 +130,10 @@ def get_soil_recs(cursor, mu_globals):
 
     VARS = ' SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER '
     cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
-    retcode = cursor.execute(cmd)
 
+    # layer_df = read_sql(cmd, conn)
+
+    retcode = cursor.execute(cmd)
     layer_recs = [rec for rec in cursor.fetchall()]
 
     return layer_recs
@@ -433,3 +435,22 @@ class HWSD_bil(object,):
                     print('Only one mu_global with value of zero - nothing to process')
 
         return mu_globals
+
+def fetch_accesss_cursor(hwsd_dir):
+    """
+    C
+    """
+    ms_drvr = 'Microsoft Access Driver(*.mdb, *.accdb)'
+    access_db_fn = join(hwsd_dir, 'mdb', 'HWSD2.mdb')
+
+    ms_srch_str = 'Microsoft Access Driver'
+    drvr_nms = [drvr_nm for drvr_nm in drivers() if drvr_nm.startswith(ms_srch_str)]
+    if len(drvr_nms) == 0:
+        print(ERROR_STR + 'could not find ' + ms_srch_str + ' among ODBC drivers')
+        return
+
+    ms_drvr = drvr_nms[0]
+
+    conn = connect(Driver=ms_drvr, DBQ=access_db_fn)
+    return conn.cursor()
+
