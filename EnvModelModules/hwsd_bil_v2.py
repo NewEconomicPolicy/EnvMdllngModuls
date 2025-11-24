@@ -132,6 +132,7 @@ def get_soil_recs(conn, cursor, mu_globals):
     cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
 
     layer_df = read_sql(cmd, conn)
+    # print(layer_df.head(26))
 
     retcode = cursor.execute(cmd)
     layer_recs = [rec for rec in cursor.fetchall()]
