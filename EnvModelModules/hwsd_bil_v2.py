@@ -92,7 +92,7 @@ def _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fa
 
     return
 
-def get_soil_recs(cursor, mu_globals):
+def get_soil_recs(conn, cursor, mu_globals):
     """
     # retcode = cursor.execute('select * from D_ROOTS')
     """
@@ -131,7 +131,7 @@ def get_soil_recs(cursor, mu_globals):
     VARS = ' SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER '
     cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
 
-    # layer_df = read_sql(cmd, conn)
+    layer_df = read_sql(cmd, conn)
 
     retcode = cursor.execute(cmd)
     layer_recs = [rec for rec in cursor.fetchall()]
