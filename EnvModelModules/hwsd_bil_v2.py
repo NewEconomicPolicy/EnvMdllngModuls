@@ -38,11 +38,11 @@ sleepTime = 5
 
 def fetch_metadata(cursor):
     """
-    C
+    retrieve field names of Layers table and corresponding descriptions
+    can also use:  df = read_sql(cmd, conn)
     """
     cmd = 'select * from HWSD2_LAYERS_METADATA'
     try:
-        # df = read_sql(cmd, conn)
         cursor.execute(cmd)
     except BaseException as err:
         print(str(err))
@@ -165,10 +165,9 @@ def check_hwsd_integrity(hwsd_dir):
 
     if integrity_flag:
         print('HWSD version 2 in ' + hwsd_dir + ' has passed integrity check')
-        return
+        return True
     else:
-        sleep(sleepTime)
-        exit(0)
+        False
 
 def validate_hwsd_rec (lgr, mu_global, data_rec):
     """
