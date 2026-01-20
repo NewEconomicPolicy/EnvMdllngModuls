@@ -28,17 +28,21 @@ from numpy import arange, dtype, zeros, int32
 from time import sleep
 from pyodbc import connect, drivers
 from tabulate import tabulate
+from collections import namedtuple
 
 ERROR_STR = '*** Error *** '
 
 VAR_FLOAT_LIST = ['ulxmap', 'ulymap', 'xdim', 'ydim']
 VAR_STR_LIST = ['pixeltype', 'byteorder', 'layout']
 
+VARS_SMU = 'COVERAGE, WRB2, FAO90'
+VARS_LAYERS = 'SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER'
+
 sleepTime = 5
 
-def fetch_metadata(cursor):
+def fetch_layers_and_smu_metadata(cursor):
     """
-    retrieve field names of Layers table and corresponding descriptions
+    retrieve field names of Layers and SMU tables and corresponding descriptions
     can also use:  df = read_sql(cmd, conn)
     """
     cmd = 'select * from HWSD2_LAYERS_METADATA'
@@ -48,13 +52,27 @@ def fetch_metadata(cursor):
         print(str(err))
         return
 
-    recs_lyrs = [rec for rec in cursor.fetchall()]
+    meta_lyrs = [rec for rec in cursor.fetchall()]
+    fields_lyrs = ''
+    for tupe in meta_lyrs:
+        fld_nme = tupe[1]
+        if fld_nme in VARS_LAYERS:
+            fields_lyrs += fld_nme.lower() + ' '
+
+    Nmd_tupe_lyrs = namedtuple('LyrsRecord', fields_lyrs)
 
     cmd = 'select * from HWSD2_SMU_METADATA'
     cursor.execute(cmd)
-    recs_smu = [rec for rec in cursor.fetchall()]
+    meta_smu = [rec for rec in cursor.fetchall()]
+    fields_smu = ''
+    for tupe in meta_smu:
+        fld_nme = tupe[1]
+        if fld_nme in VARS_SMU:
+            fields_smu += fld_nme.lower() + ' '
 
-    return recs_lyrs, recs_smu
+    Nmd_tupe_smu = namedtuple('SmuRecord', fields_smu)
+
+    return Nmd_tupe_smu, Nmd_tupe_lyrs
 
 def fetch_accesss_conn(hwsd_dir):
     """
@@ -92,7 +110,7 @@ def _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fa
 
     return
 
-def get_soil_recs(conn, cursor, mu_globals):
+def get_soil_recs(conn, cursor, mu_globals, Nmd_tupe_smu, Nmd_tupe_lyrs):
     """
     # retcode = cursor.execute('select * from D_ROOTS')
     """
@@ -103,8 +121,7 @@ def get_soil_recs(conn, cursor, mu_globals):
 
     # fetch Coverage, Dominant Soil Units for WRB and FAO
     # ===================================================
-    VARS = ' COVERAGE, WRB2, FAO90 '
-    cmd = 'select ' + VARS + ' from HWSD2_SMU where HWSD2_SMU_ID = ' + str(mu_global)
+    cmd = 'select ' + VARS_SMU + ' from HWSD2_SMU where HWSD2_SMU_ID = ' + str(mu_global)
     cursor.execute(cmd)
 
     smu_recs = [rec for rec in cursor.fetchall()]
@@ -127,9 +144,7 @@ def get_soil_recs(conn, cursor, mu_globals):
     fao90_value = recs[0][0]
 
     _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fao90)
-
-    VARS = ' SEQUENCE, SHARE, LAYER, SAND, SILT, CLAY, BULK, REF_BULK, ORG_CARBON, PH_WATER '
-    cmd = 'select ' + VARS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
+    cmd = 'select ' + VARS_LAYERS + ' from HWSD2_LAYERS where HWSD2_SMU_ID = ' + str(mu_global)
 
     layer_df = read_sql(cmd, conn)
     # print(layer_df.head(26))
