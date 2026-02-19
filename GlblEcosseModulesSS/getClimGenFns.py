@@ -138,9 +138,9 @@ def fetch_WrldClim_data(lgr, lat, lon, climgen, nc_dsets, lat_indx, lon_indx, hi
         # =============================================================================
         if type(slice[0]) is MaskedConstant:
             pettmp = None
-            mess = 'No data at lat: {} {}\tlon: {} {}\thist_flag: {}'.format(lat, lat_indx, lon, lon_indx, hist_flag)
+            mess = 'No data at lat: {} {}\tlon: {} {}\thist_flag: {}\n'.format(lat, lat_indx, lon, lon_indx, hist_flag)
             lgr.info(mess)
-            print(mess)
+            # print(mess)
         else:
             pettmp[metric] = [float(val) for val in slice]
 
