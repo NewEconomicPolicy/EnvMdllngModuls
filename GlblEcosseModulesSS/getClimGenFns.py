@@ -14,9 +14,117 @@ __author__ = 's03mm5'
 from numpy.ma.core import MaskedConstant, MaskError
 from netCDF4 import Dataset
 from warnings import filterwarnings
+from time import time
+from sys import stdout
 
 ERROR_STR = '*** Error *** '
 WARNING = '*** Warning *** '
+
+NULL_VALUE = -9999
+GRANULARITY = 120
+
+def compress_pettmp_hist_fut(pettmp_hist, pettmp_fut):
+    """
+    compress historic and future weather
+    """
+    func_name = 'compress_pettmp_hist_fut'
+    keys_hist = list(pettmp_hist['precip'].keys())
+    keys_fut = list(pettmp_fut['precip'].keys())
+
+    mess = '\nHistoric and Future pettmp have '
+    if keys_fut.sort() == keys_hist.sort():
+        all_keys = keys_fut
+        print(mess + 'same coordinate set')
+    else:
+        in_fut = set(keys_fut)
+        in_hist = set(keys_hist)
+        in_fut_not_in_hist = in_fut - in_hist
+        all_keys = in_hist + list(in_fut_not_in_hist)
+        print(WARNING + mess + 'same different coordinate set')
+
+    # main loop
+    # =========
+    pettmp_hist_new = {'lat_lons': {}, 'precip': {}, 'tas': {}}
+    pettmp_fut_new = {'precip': {}, 'tas': {}}
+    nskipped = 0
+    ncopied = 0
+    for key in all_keys:
+        if key in keys_fut and key in keys_hist:
+            if pettmp_hist['precip'][key] is None:
+                nskipped += 1
+                continue
+
+            pettmp_hist_new['lat_lons'][key] = pettmp_hist['lat_lons'][key]
+            for metric in ['precip', 'tas']:
+                pettmp_hist_new[metric][key] = pettmp_hist[metric][key]
+                pettmp_fut_new[metric][key] = pettmp_fut[metric][key]
+            ncopied += 1
+
+    print('Copied {} and skipped {} weather cells in function {}'.format(ncopied, nskipped, func_name))
+
+    return pettmp_hist_new, pettmp_fut_new
+
+def fetch_WrldClim_NC_data(lgr, aoi_indices, climgen, nc_dsets, hist_flag=False, fut_start_indx=0):
+    """
+    self, aoi_indices, num_band, fut_start_indx=0
+    get precipitation or temperature data for a given variable and lat/long indices for all times
+    """
+    func_name = __prog__ + ' fetch_WrldClim_NC_data'
+    filterwarnings("error")
+
+    nkey_masked = 0
+    lat_indx_min, lat_indx_max, lon_indx_min, lon_indx_max = aoi_indices
+    ncells = (lat_indx_max + 1 - lat_indx_min) * (lon_indx_max + 1 - lon_indx_min)
+    pettmp = {}
+    pettmp['lat_lons'] = {}
+    last_time = time()
+
+    for metric in list(['precip', 'tas']):
+        pettmp[metric] = {}
+
+        if hist_flag:
+            varname = climgen.hist_wthr_set_defn[metric]
+            try:
+                slice = nc_dsets[metric].variables[varname][:, lat_indx_min:lat_indx_max + 1, lon_indx_min:lon_indx_max + 1]
+            except BaseException as err:
+                print(ERROR_STR + str(err))
+                return None
+        else:
+            varname = climgen.fut_wthr_set_defn[metric]
+            slice = nc_dsets[metric].variables[varname][:, lat_indx_min:lat_indx_max + 1, lon_indx_min:lon_indx_max + 1]
+
+        # reform slice
+        # ============
+        icells = 0
+        for ilat, lat_indx in enumerate(range(lat_indx_min, lat_indx_max + 1)):
+            lat =  float(nc_dsets[metric].variables['lat'][lat_indx])
+            gran_lat = round((90.0 - lat) * GRANULARITY)
+
+            for ilon, lon_indx in enumerate(range(lon_indx_min, lon_indx_max + 1)):
+                lon = float(nc_dsets[metric].variables['lon'][lon_indx])
+                gran_lon = round((180.0 + lon) * GRANULARITY)
+                key = '{:0=5d}_{:0=5d}'.format(int(gran_lat), int(gran_lon))
+                icells += 1
+                last_time = update_fetch_progress(last_time, nkey_masked, icells, ncells)
+
+                # validate values
+                # ===============
+                pettmp[metric][key] = NULL_VALUE
+                val = slice[0, ilat, ilon]
+                if type(val) is MaskedConstant:
+                    lgr.info('val is ma.masked for key ' + key)
+                    pettmp[metric][key] = None
+                    nkey_masked += 1
+
+                # add data for this coordinate
+                # ============================
+                if pettmp[metric][key] == NULL_VALUE:
+                    record = [round(val, 1) for val in slice[:, ilat, ilon]]
+                    pettmp[metric][key] = record[fut_start_indx:]
+
+                pettmp['lat_lons'][key] = [lat, lon]
+
+    return pettmp
 
 def _apply_start_year_correction(sim_strt_yr, hist_dset_defn, pettmp):
     """
@@ -208,3 +316,109 @@ def check_clim_nc_limits(form, bbox_aoi = None, wthr_rsrce = 'CRU') :
         limits_ok_flag = False
 
     return limits_ok_flag
+
+def update_fetch_progress(last_time, nmasked, ncompleted, ncells):
+    """
+    Update progress bar
+    """
+    new_time = time()
+    if new_time - last_time > 5:
+        percnt_nremain = round(100 * ((ncells - ncompleted)/ncells), 2)
+
+        scmplt = format(ncompleted, ',')
+        smask = format(nmasked, ',')
+        mess = '\rCells:  Completed: ' + scmplt
+        mess += '\tMasked: ' + smask
+        mess += '\tPercent: ' + str(percnt_nremain)
+        stdout.flush()
+        stdout.write(mess)
+        last_time = new_time
+
+    return last_time
+
+def associate_climate(site_rec, climgen, pettmp_hist, pettmp_fut):
+    """
+    this function associates each soil grid point with the most proximate climate data grid cell
+    at the time of writing (Dec 2015) HWSD soil data is on a 30 arc second grid whereas climate data is on 30 or 15 or
+     7.5 arc minute grid i.e. 0.5 or 0.25 or 0.125 of a degree
+    """
+    func_name =  __prog__ + ' associate_climate'
+
+    proximate_keys = {}
+    gran_lat_cell, gran_lon_cell, latitude, longitude = site_rec[:4]
+    metric_list = pettmp_fut.keys()
+
+    # TODO: find a more elegant methodology
+    # =====================================
+    for lookup_key in pettmp_hist['precip']:
+
+        if lookup_key in pettmp_fut['precip']:
+            if pettmp_fut['precip'][lookup_key] == None or pettmp_fut['tas'][lookup_key] == None or \
+                        pettmp_hist['precip'][lookup_key] == None or pettmp_fut['tas'][lookup_key] == None:
+                continue
+            else:
+                slat, slon = lookup_key.split('_')
+                gran_lat = int(slat)
+                gran_lon = int(slon)
+
+                # situation where grid cell is coincidental with weather cell
+                # ===========================================================
+                if gran_lat == gran_lat_cell and gran_lon == gran_lon_cell:
+                    climgen.lgr.info('Cell with lookup key ' + lookup_key + ' is coincidental with weather cell')
+                    pettmp_out = {}
+                    for metric in pettmp_fut.keys():
+                        pettmp_out[metric] = list([pettmp_hist[metric][lookup_key], pettmp_fut[metric][lookup_key]])
+                    return pettmp_out
+                else:
+                    proximate_keys[lookup_key] = list([gran_lat, gran_lon])
+
+    # return empty dict if no proximate keys (unlikely)
+    # =================================================
+    if len(proximate_keys) == 0:
+        print('\nNo weather keys assigned for site record with granular coordinates: {} {}\tand lat/lon: {} {}'
+                                        .format(gran_lat_cell, gran_lon_cell, round(latitude,4), round(longitude,4)))
+        return {}
+
+    '''
+    use the minimum distance to assign weather for specified grid cell
+    '''
+    # first stanza: calculate the squares of the distances in granular units between the grid cell and weathers cells
+    # =============
+    dist = {}
+    total_dist = 0
+    for lookup_key in proximate_keys:
+        gran_lat, gran_lon = proximate_keys[lookup_key]
+        # _write_coords_for_key('\t', proximate_keys, lookup_key, func_name)
+
+        dist[lookup_key] = (gran_lat - gran_lat_cell)**2 + (gran_lon - gran_lon_cell)**2
+        total_dist += dist[lookup_key]
+
+    # find key corresponding to the minimum value using conversions to lists
+    # ======================================================================
+    minval = sorted(dist.values())[0]
+    lookup_key = list(dist.keys())[list(dist.values()).index(minval)]
+    _write_coords_for_key('Selected weather key', climgen, proximate_keys, lookup_key, func_name)
+
+    # construct result
+    # ================
+    pettmp_new_hist = {}
+    pettmp_new_fut = {}
+    for metric in metric_list:
+        pettmp_new_hist[metric] = pettmp_hist[metric][lookup_key]
+        pettmp_new_fut[metric] = pettmp_fut[metric][lookup_key]
+
+    return (pettmp_new_hist, pettmp_new_fut)
+
+def _write_coords_for_key(mess, climgen, proximate_keys, lookup_key, func_name):
+    """
+     C
+    """
+    # should go in log file - TODO
+    gran_lat, gran_lon = proximate_keys[lookup_key]
+    latitude  = 90 - gran_lat/GRANULARITY
+    longitude = gran_lon/GRANULARITY - 180
+    mess += ' Lat: {}\tGran lat: {}\tLon: {}\tGran lon: {}\tin {}'.format(latitude, gran_lat, longitude, gran_lon,
+                                                                                                        func_name)
+    climgen.lgr.info(mess)
+
+    return
