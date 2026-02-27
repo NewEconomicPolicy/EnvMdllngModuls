@@ -161,7 +161,7 @@ def grid_resolutions(form, grid, irow):
 
     form.lbl16a = QLabel('')
     form.lbl16a.setToolTip(helpText)
-    grid.addWidget(form.lbl16a, irow, 2, 1, 3)
+    grid.addWidget(form.lbl16a, irow, 2, 1, 5)
 
     return irow
 
