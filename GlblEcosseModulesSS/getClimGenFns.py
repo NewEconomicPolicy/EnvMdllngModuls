@@ -64,7 +64,7 @@ def compress_pettmp_hist_fut(pettmp_hist, pettmp_fut):
 
     return pettmp_hist_new, pettmp_fut_new
 
-def fetch_WrldClim_NC_data(lgr, aoi_indices, climgen, nc_dsets, hist_flag=False, fut_start_indx=0):
+def fetch_WrldClim_NC_data(lgr, aoi_indices, climgen, nc_dsets, hist_flag=False, fut_start_indx=0, report_flag=False):
     """
     self, aoi_indices, num_band, fut_start_indx=0
     get precipitation or temperature data for a given variable and lat/long indices for all times
@@ -101,11 +101,16 @@ def fetch_WrldClim_NC_data(lgr, aoi_indices, climgen, nc_dsets, hist_flag=False,
             gran_lat = round((90.0 - lat) * GRANULARITY)
 
             for ilon, lon_indx in enumerate(range(lon_indx_min, lon_indx_max + 1)):
-                lon = float(nc_dsets[metric].variables['lon'][lon_indx])
+                try:
+                    lon = float(nc_dsets[metric].variables['lon'][lon_indx])
+                except IndexError as err:
+                    continue
+
                 gran_lon = round((180.0 + lon) * GRANULARITY)
                 key = '{:0=5d}_{:0=5d}'.format(int(gran_lat), int(gran_lon))
                 icells += 1
-                last_time = update_fetch_progress(last_time, nkey_masked, icells, ncells)
+                if report_flag:
+                    last_time = update_fetch_progress(last_time, nkey_masked, icells, ncells)
 
                 # validate values
                 # ===============
@@ -336,7 +341,7 @@ def update_fetch_progress(last_time, nmasked, ncompleted, ncells):
 
     return last_time
 
-def associate_climate(site_rec, climgen, pettmp_hist, pettmp_fut):
+def associate_climate(site_rec, climgen, pettmp_hist, pettmp_fut, report_flag=True):
     """
     this function associates each soil grid point with the most proximate climate data grid cell
     at the time of writing (Dec 2015) HWSD soil data is on a 30 arc second grid whereas climate data is on 30 or 15 or
@@ -375,15 +380,15 @@ def associate_climate(site_rec, climgen, pettmp_hist, pettmp_fut):
     # return empty dict if no proximate keys (unlikely)
     # =================================================
     if len(proximate_keys) == 0:
-        print('\nNo weather keys assigned for site record with granular coordinates: {} {}\tand lat/lon: {} {}'
-                                        .format(gran_lat_cell, gran_lon_cell, round(latitude,4), round(longitude,4)))
+        if report_flag:
+            mess = '\nNo weather keys assigned for site record with granular coordinates: '
+            mess += '{} {}\tand lat/lon:'.format(round(gran_lat_cell, 4), round(gran_lon_cell, 4))
+            print(mess + '{} {}'.format(round(latitude,4), round(longitude,4)))
         return {}
 
-    '''
-    use the minimum distance to assign weather for specified grid cell
-    '''
+    # use the minimum distance to assign weather for specified grid cell
     # first stanza: calculate the squares of the distances in granular units between the grid cell and weathers cells
-    # =============
+    # ===============================================================================================================
     dist = {}
     total_dist = 0
     for lookup_key in proximate_keys:
