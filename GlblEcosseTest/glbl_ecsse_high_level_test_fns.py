@@ -74,7 +74,7 @@ def generate_banded_sims_test(form, region, crop_name):
     """
     year_from = int(form.w_yr_from.text())
 
-    if form.w_ave_wthr.isChecked():
+    if form.w_strt_1801.isChecked():
         start_from_1801 = True
     else:
         start_from_1801 = False

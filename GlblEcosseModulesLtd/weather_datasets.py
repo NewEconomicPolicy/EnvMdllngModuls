@@ -559,21 +559,25 @@ def change_weather_resource(form, weather_resource=None):
         wthr_settings_prev = form.wthr_settings_prev[weather_resource]
         form.combo10.setCurrentText(wthr_settings_prev['scenario'])
 
-    form.combo09s.clear()
-    for year in hist_syears:
-        form.combo09s.addItem(str(year))
+    if hasattr(form, 'combo09s'):
+        form.combo09s.clear()
+        for year in hist_syears:
+            form.combo09s.addItem(str(year))
 
-    form.combo09e.clear()
-    for year in hist_eyears:
-        form.combo09e.addItem(str(year))
+    if hasattr(form, 'combo09e'):
+        form.combo09e.clear()
+        for year in hist_eyears:
+            form.combo09e.addItem(str(year))
 
-    form.combo11s.clear()
-    for year in fut_syears:
-        form.combo11s.addItem(str(year))
+    if hasattr(form, 'combo11s'):
+        form.combo11s.clear()
+        for year in fut_syears:
+            form.combo11s.addItem(str(year))
 
-    form.combo11e.clear()
-    for year in fut_eyears:
-        form.combo11e.addItem(str(year))
+    if hasattr(form, 'combo11e'):
+        form.combo11e.clear()
+        for year in fut_eyears:
+            form.combo11e.addItem(str(year))
 
     if weather_resource in form.wthr_settings_prev:
         wthr_settings_prev = form.wthr_settings_prev[weather_resource]
