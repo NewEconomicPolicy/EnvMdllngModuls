@@ -236,12 +236,13 @@ class HWSD_mu_globals_csv(object,):
 
             # complete object
             # ===============
+            self.aoi_label = aoi_label
+            self.bbox = list([lon_ll_aoi, lat_ll_aoi, lon_ur_aoi, lat_ur_aoi])
+            self.csv_fname = csv_fname
+            self.data_frame = data_frame
             self.lon_ll_aoi = lon_ll_aoi
             self.lat_ll_aoi = lat_ll_aoi
             self.lon_ur_aoi = lon_ur_aoi
             self.lat_ur_aoi = lat_ur_aoi
-            self.nlines = nlines
             self.mu_global_list = sorted(mu_global_list)
-            self.aoi_label = aoi_label
-            self.csv_fname = csv_fname
-            self.data_frame = data_frame
+            self.nlines = nlines
