@@ -215,6 +215,15 @@ def join_hist_fut_to_sim_wthr(climgen, pettmp_hist, pettmp_fut):
 
     return pettmp_sim
 
+def close_wthr_NC_sets(hist_wthr_dsets, fut_wthr_dsets):
+    """
+    close NetCDF files
+    """
+    for metric in hist_wthr_dsets:
+        hist_wthr_dsets[metric].close()
+        fut_wthr_dsets[metric].close()
+
+    return
 def open_wthr_NC_sets(climgen):
     """
     C
