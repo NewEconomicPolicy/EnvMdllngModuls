@@ -27,7 +27,13 @@ from locale import LC_ALL, setlocale, format_string
 from numpy import arange, dtype, zeros, int32
 from time import sleep
 from pyodbc import connect, drivers
-from tabulate import tabulate
+try:
+    from tabulate import tabulate
+    TABUL_FLAG = True
+except ModuleNotFoundError as err:
+    print(str(err))
+    TABUL_FLAG = False
+
 from collections import namedtuple
 
 ERROR_STR = '*** Error *** '
@@ -103,10 +109,11 @@ def _make_four_line_table(coverage, mu_global, wrb2_value, wrb2, fao90_value, fa
         ['Dominant Soil Unit (WRB 2022):', wrb2_value + '(' + wrb2 + ')'],
         ['Dominant Soil Unit (FAO 1990):', fao90_value + '(' + fao90 + ')']
     ]
-    # create header
-    headers = ['Name', 'City']
-
-    print(tabulate(a, headers=headers, tablefmt='grid'))
+    # create headers
+    # ==============
+    if TABUL_FLAG:
+        headers = ['Name', 'City']
+        print(tabulate(a, headers=headers, tablefmt='grid'))
 
     return
 
