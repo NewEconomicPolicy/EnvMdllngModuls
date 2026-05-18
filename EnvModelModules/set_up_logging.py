@@ -26,6 +26,7 @@ except ModuleNotFoundError as err:
     print(str(err))
 
 ERROR_STR = '*** Error *** '
+WARNING_STR = '*** Warning *** '
 MAX_LOG_FILES = 10
 sleepTime = 5
 
@@ -33,15 +34,23 @@ def set_up_logging(form, appl_name, lggr_flag = False):
     """
     set up logging
     """
-    if not hasattr(form, 'settings'):
-        print(ERROR_STR + 'could not setup logging, form object must have settings attribute')
-        return
+    log_flag = False
 
-    if 'log_dir' not in form.settings:
+    if not hasattr(form, 'settings') and not hasattr(form, 'setup'):
+        print(ERROR_STR + 'could not setup logging, form object must have settings or setup attribute')
+        return log_flag
+
+    if hasattr(form, 'settings'):
+        settings = form.settings
+    else:
+        settings = form.setup
+
+    # ==========
+    if 'log_dir' not in settings:
         print(ERROR_STR + 'could not setup logging, settings dictionary must have log_dir attribute')
-        return
+        return log_flag
 
-    log_dir = form.settings['log_dir']
+    log_dir = settings['log_dir']
     if not isdir(log_dir):
         makedirs(log_dir)
 
@@ -75,14 +84,16 @@ def set_up_logging(form, appl_name, lggr_flag = False):
                 remove(log_flist[ifile])
                 lggr.info('removed log file: ' + log_flist[ifile])
             except (OSError, IOError) as err:
-                print('Failed to delete log file: {}'.format(err))
+                print(WARNING_STR + 'Failed to delete log file: {}'.format(err))
 
     if lggr_flag:
         form.lggr = lggr
     else:
         form.lgr = lggr
 
-    return
+    log_flag = True
+
+    return log_flag
 
 class OutLog:
     def __init__(self, edit, out=None, color=None):
